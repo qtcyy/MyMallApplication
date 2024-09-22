@@ -1,0 +1,60 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    dynamic:
+      primary: master
+      datasource:
+        master:
+          type: ${spring.datasource.type}
+          driverClassName: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://localhost:3306/my_mail_db
+          username: root
+          password: 12345678
+
+      hikari:
+        maxPoolSize: 20
+        minIdle: 10
+        connectionTimeout: 30000
+        validationTimeout: 5000
+        idleTimeout: 600000
+        maxLifetime: 1800000
+        connectionTestQuery: SELECT 1
+        keepaliveTime: 30000
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+
+server:
+  port: 8081
+
+# Sa-Token ??
+sa-token:
+  # ------- SSO-???????  (?????????)
+  # cookie:
+  # ?? Cookie ???
+  # domain: stp.com
+
+  # ------- SSO-???????
+  sso-server:
+    # Ticket??? (??: ?)??????
+    ticket-timeout: 300
+    # ???????????
+    allow-url: "*"
+
+    # ------- SSO-??????? ?????????SSO???????
+    # ???????
+    is-http: true
+  sign:
+    # API ??????
+    secret-key: kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
+    # ---- ????????????? Sa-Token ??http??????????????
+  timeout: 86400
+  active-timeout: 43200
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
