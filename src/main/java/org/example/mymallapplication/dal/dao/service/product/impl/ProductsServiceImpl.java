@@ -9,6 +9,7 @@ import org.example.mymallapplication.dal.dao.service.product.IProductsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>服务实现类</p>
@@ -66,6 +67,21 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     @Override
     public Products getProducts(Long id) {
         return this.getById(id);
+    }
+
+    /**
+     * <p>批量查询存在的ID</p>
+     *
+     * @param productIds 产品ID列表
+     * @return 存在的产品ID列表
+     */
+    @Override
+    public List<Long> getExistingProductIds(List<Long> productIds) {
+        LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Products::getId, productIds);
+
+        return this.list(queryWrapper).stream()
+                .map(Products::getId).collect(Collectors.toList());
     }
 
     /**

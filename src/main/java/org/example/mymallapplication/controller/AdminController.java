@@ -1,14 +1,12 @@
 package org.example.mymallapplication.controller;
 
-import cn.dev33.satoken.annotation.SaCheckPermission;
-import cn.dev33.satoken.annotation.SaCheckRole;
-import cn.dev33.satoken.annotation.SaIgnore;
-import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.annotation.*;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.service.AdminService;
 import org.example.mymallapplication.dal.vo.request.AdminLoginRequest;
 import org.example.mymallapplication.dal.vo.request.AdminRegisterRequest;
+import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
 import org.example.mymallapplication.dal.vo.request.UpdateUserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +29,12 @@ public class AdminController {
     @RequestMapping("/register")
     public SaResult adminRegister(@RequestBody AdminRegisterRequest request) {
         return adminService.adminRegister(request);
+    }
+
+    @SaCheckLogin
+    @RequestMapping("/change/pwd")
+    public SaResult changePwd(@RequestBody ChangePwdRequest request) {
+        return adminService.changePwd(request);
     }
 
     @SaIgnore

@@ -34,6 +34,12 @@ public class GroupController {
         return categoryService.getCate(name);
     }
 
+    @SaCheckPermission("read")
+    @RequestMapping("/get/{id}")
+    public SaResult getCategory(@PathVariable Long id) {
+        return categoryService.getCate(id);
+    }
+
     @SaCheckPermission("change")
     @RequestMapping("/change/{id}")
     public SaResult changeCate(@PathVariable Long id, @RequestBody CategoryRequest request) {

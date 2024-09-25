@@ -23,6 +23,8 @@ public interface IProductsService extends IService<Products> {
 
     Products getProducts(Long id);
 
+    List<Long> getExistingProductIds(List<Long> productIds);
+
     Products getProducts(String name);
 
     List<Products> getProducts(List<Long> ids);

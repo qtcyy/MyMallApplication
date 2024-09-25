@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.service.UserService;
+import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
 import org.example.mymallapplication.dal.vo.request.UserLoginRequest;
 import org.example.mymallapplication.dal.vo.request.UserRegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,12 @@ public class UserController {
     @RequestMapping("/register")
     public SaResult doRegister(@RequestBody UserRegisterRequest request) {
         return userService.userRegister(request);
+    }
+
+    @SaCheckLogin
+    @RequestMapping("/change/pwd")
+    public SaResult changePwd(ChangePwdRequest request) {
+        return userService.changePwd(request);
     }
 
     @SaCheckLogin

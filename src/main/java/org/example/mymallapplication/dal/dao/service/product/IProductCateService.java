@@ -24,4 +24,6 @@ public interface IProductCateService extends IService<ProductCate> {
     boolean deleteGroup(Long cateId, Long productId);
 
     List<Long> getProductIds(List<Long> cateIds);
+
+    List<ProductCate> getProducts(List<Long> ids);
 }

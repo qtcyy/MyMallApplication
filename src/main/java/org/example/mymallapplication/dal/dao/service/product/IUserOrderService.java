@@ -3,6 +3,8 @@ package org.example.mymallapplication.dal.dao.service.product;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.example.mymallapplication.dal.dao.entity.product.UserOrder;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -13,4 +15,5 @@ import org.example.mymallapplication.dal.dao.entity.product.UserOrder;
  */
 public interface IUserOrderService extends IService<UserOrder> {
 
+    List<Long> getOrderId(Long userId);
 }

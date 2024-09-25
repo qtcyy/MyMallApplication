@@ -95,4 +95,18 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
         return this.list(queryWrapper).stream()
                 .map(ProductCate::getProductId).collect(Collectors.toList());
     }
+
+    /**
+     * <p>根据产品ID列表获取映射表实体列表</p>
+     *
+     * @param ids 产品ID列表
+     * @return 映射表实体列表
+     */
+    @Override
+    public List<ProductCate> getProducts(List<Long> ids) {
+        LambdaQueryWrapper<ProductCate> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ProductCate::getProductId, ids);
+
+        return this.list(queryWrapper);
+    }
 }

@@ -1,10 +1,13 @@
 package org.example.mymallapplication.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaIgnore;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
 import org.example.mymallapplication.dal.service.ProductService;
+import org.example.mymallapplication.dal.vo.request.ShippingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
     @Autowired
     ProductService productService;
+
+    @SaCheckRole(value = {"root", "admin"}, mode = SaMode.OR)
+    @GetMapping("/isLogin")
+    public SaResult loginCheck() {
+        return SaResult.ok("已登陆!");
+    }
 
     @SaCheckPermission("add")
     @RequestMapping("/insert")
@@ -36,5 +45,11 @@ public class ProductController {
     @DeleteMapping("/delete/{id}")
     public SaResult deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id);
+    }
+
+    @SaCheckPermission(value = {"change", "add"}, mode = SaMode.OR)
+    @RequestMapping("/shipping")
+    public SaResult shipProduct(@RequestBody ShippingRequest request) {
+        return productService.shipProduct(request);
     }
 }

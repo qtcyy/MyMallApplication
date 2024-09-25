@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
 import org.example.mymallapplication.dal.enums.State;
 
 import java.io.Serializable;
@@ -26,6 +28,10 @@ public class Orders implements Serializable {
     private Long id;
 
     private LocalDateTime time;
+
+    @Getter
+    @Setter
+    private int number;
 
     @TableField("state")
     private State state;

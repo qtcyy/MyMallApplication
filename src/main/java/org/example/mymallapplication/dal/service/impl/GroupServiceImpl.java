@@ -2,6 +2,7 @@ package org.example.mymallapplication.dal.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.dao.entity.product.Category;
+import org.example.mymallapplication.dal.dao.entity.product.ProductCate;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
 import org.example.mymallapplication.dal.dao.service.product.ICategoryService;
 import org.example.mymallapplication.dal.dao.service.product.IProductCateService;
@@ -78,16 +79,36 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public SaResult getCate(String name) {
         List<Category> categories = categoryService.getCategories(name);
-        if (categories == null) {
+        if (categories.isEmpty()) {
             return SaResult.error("未找到");
         }
 
         List<Long> cateIds = categories.stream().map(Category::getId).toList();
 
         List<Long> productIds = productCateService.getProductIds(cateIds);
+        if (productIds.isEmpty()) {
+            return SaResult.ok("获取成功！无相关产品").setData(categories).setCode(520);
+        }
+        System.out.println(productIds);
         List<Products> products = productsService.getProducts(productIds);
 
         return SaResult.ok("获取成功！").setData(new GetCateResponse(categories, products));
+    }
+
+    /**
+     * <p>根据ID获取类别</p>
+     *
+     * @param id 类别ID
+     * @return 类别
+     */
+    @Override
+    public SaResult getCate(Long id) {
+        if (!categoryService.hasCate(id)) {
+            return SaResult.error("不存在！");
+        }
+
+        Category category = categoryService.getById(id);
+        return SaResult.ok("获取成功!").setData(category);
     }
 
     /**
@@ -130,13 +151,22 @@ public class GroupServiceImpl implements GroupService {
             return SaResult.error("无此类别！");
         }
 
-        List<Long> errList = new ArrayList<>();
-        for (Long id : request.getProductIds()) {
-            if (!productsService.hasProduct(id)) {
-                errList.add(id);
-                continue;
-            }
-            productCateService.saveGroup(request.getCateId(), id);
+        List<Long> productIds = request.getProductIds();
+        List<Long> existingIds = productsService.getExistingProductIds(productIds);
+
+        List<Long> errList = new ArrayList<>(productIds);
+        errList.removeAll(existingIds);
+
+        List<ProductCate> entities = existingIds.stream()
+                .map(id -> {
+                    ProductCate entity = new ProductCate();
+                    entity.setCategoryId(request.getCateId());
+                    entity.setProductId(id);
+                    return entity;
+                }).toList();
+
+        if (!entities.isEmpty()) {
+            productCateService.saveBatch(entities);
         }
 
         if (errList.isEmpty()) {
@@ -157,7 +187,7 @@ public class GroupServiceImpl implements GroupService {
             return SaResult.error("无此类别！");
         }
 
-        List<Long> errList = new ArrayList<>();
+        /*
         for (Long id : request.getProductIds()) {
             if (!productsService.hasProduct(id)) {
                 errList.add(id);
@@ -170,10 +200,21 @@ public class GroupServiceImpl implements GroupService {
 
             productCateService.deleteGroup(request.getCateId(), id);
         }
+        */
+        List<Long> productIds = request.getProductIds();
+        List<Long> existingIds = productsService.getExistingProductIds(productIds);
 
-        if (errList.isEmpty()) {
-            return SaResult.ok("删除成功！");
+        List<Long> errList = new ArrayList<>(productIds);
+        errList.removeAll(existingIds);
+        List<ProductCate> delProductCate = productCateService.getProducts(existingIds);
+
+        if (productCateService.removeBatchByIds(delProductCate)) {
+            if (errList.isEmpty()) {
+                return SaResult.ok("删除成功！");
+            }
+            return SaResult.error("有错误！已返回有问题的产品ID").setData(errList);
         }
-        return SaResult.error("有错误！已返回有问题的产品ID").setData(errList);
+
+        return SaResult.error("删除失败！");
     }
 }

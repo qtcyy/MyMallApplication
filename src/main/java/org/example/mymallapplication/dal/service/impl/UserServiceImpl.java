@@ -8,6 +8,7 @@ import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersServic
 import org.example.mymallapplication.dal.dao.service.person.IUsersService;
 import org.example.mymallapplication.dal.redis.service.RedisService;
 import org.example.mymallapplication.dal.service.UserService;
+import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
 import org.example.mymallapplication.dal.vo.request.UserLoginRequest;
 import org.example.mymallapplication.dal.vo.request.UserRegisterRequest;
 import org.example.mymallapplication.dal.vo.response.UserLoginResponse;
@@ -75,6 +76,29 @@ public class UserServiceImpl implements UserService {
         }
 
         return SaResult.error("注册失败！");
+    }
+
+    /**
+     * <p>用户改密服务</p>
+     *
+     * @param request 改密请求
+     * @return 改密状态
+     */
+    @Override
+    public SaResult changePwd(ChangePwdRequest request) {
+        Long userId = Long.parseLong((String) StpUtil.getLoginId());
+        FrontendUsers user = usersService.getFrontendUsers(userId);
+        if (redis.hasKey(user.getUsername())) {
+            redis.deleteKey(user.getUsername());
+        }
+
+        user.setPassword(SaSecureUtil.sha256(request.getPassword()));
+        if (!usersService.updateById(user)) {
+            return SaResult.error("改密失败，请重新更改！");
+        }
+
+        StpUtil.logout();
+        return SaResult.ok("改密成功，请重新登陆！");
     }
 
     /**

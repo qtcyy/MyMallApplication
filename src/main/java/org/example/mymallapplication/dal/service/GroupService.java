@@ -12,6 +12,8 @@ public interface GroupService {
 
     SaResult getCate(String name);
 
+    SaResult getCate(Long id);
+
     SaResult changeCate(Long id, CategoryRequest request);
 
     SaResult groupCate(GroupCateRequest request);

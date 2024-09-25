@@ -12,6 +12,7 @@ import org.example.mymallapplication.dal.service.AdminService;
 import org.example.mymallapplication.dal.service.DBService;
 import org.example.mymallapplication.dal.vo.request.AdminLoginRequest;
 import org.example.mymallapplication.dal.vo.request.AdminRegisterRequest;
+import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
 import org.example.mymallapplication.dal.vo.request.UpdateUserRequest;
 import org.example.mymallapplication.dal.vo.response.AdminLoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,29 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return SaResult.error("注册失败！");
+    }
+
+    /**
+     * <p>更改管理员密码</p>
+     *
+     * @param request 改密请求
+     * @return 改密状态
+     */
+    @Override
+    public SaResult changePwd(ChangePwdRequest request) {
+        Long userId = Long.parseLong((String) StpUtil.getLoginId());
+        Users user = usersService.getById(userId);
+        if (redis.hasKey(user.getUsername())) {
+            redis.deleteKey(user.getUsername());
+        }
+
+        user.setPassword(SaSecureUtil.sha256(request.getPassword()));
+        if (!usersService.updateById(user)) {
+            return SaResult.error("更改密码失败！请重新更改");
+        }
+
+        StpUtil.logout();
+        return SaResult.ok("更改成功！请重新登陆");
     }
 
     /**

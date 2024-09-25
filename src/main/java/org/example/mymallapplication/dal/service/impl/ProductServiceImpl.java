@@ -1,10 +1,14 @@
 package org.example.mymallapplication.dal.service.impl;
 
 import cn.dev33.satoken.util.SaResult;
+import org.example.mymallapplication.dal.dao.entity.product.Orders;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
 import org.example.mymallapplication.dal.dao.service.product.ICategoryService;
+import org.example.mymallapplication.dal.dao.service.product.IOrdersService;
 import org.example.mymallapplication.dal.dao.service.product.IProductsService;
+import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.service.ProductService;
+import org.example.mymallapplication.dal.vo.request.ShippingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +20,8 @@ public class ProductServiceImpl implements ProductService {
     private IProductsService productsService;
     @Autowired
     private ICategoryService categoryService;
+    @Autowired
+    private IOrdersService ordersService;
 
     /**
      * <p>保存商品信息</p>
@@ -41,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SaResult getProductsLike(String name) {
         List<Products> products = productsService.getProductsLike(name);
-        if (products == null) {
+        if (products.isEmpty()) {
             return SaResult.error("未找到");
         }
         return SaResult.ok("获取成功！").setData(products);
@@ -90,5 +96,22 @@ public class ProductServiceImpl implements ProductService {
         return SaResult.error("删除失败！");
     }
 
+    /**
+     * <p>订单发货服务</p>
+     *
+     * @param request 发货请求
+     * @return 发货状态
+     */
+    @Override
+    public SaResult shipProduct(ShippingRequest request) {
+        List<Long> orderIds = request.getOrderIds();
+        List<Orders> orders = ordersService.getOrders(orderIds);
+        for (Orders order : orders) {
+            order.setState(State.valueOf("TRANSPORT"));
+        }
+        ordersService.saveBatch(orders);
+
+        return SaResult.ok("发货成功！");
+    }
 
 }
