@@ -1,6 +1,9 @@
 package org.example.mymallapplication.controller;
 
-import cn.dev33.satoken.annotation.*;
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaIgnore;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.service.AdminService;
@@ -31,7 +34,7 @@ public class AdminController {
         return adminService.adminRegister(request);
     }
 
-    @SaCheckLogin
+    @SaCheckRole(value = "admin")
     @RequestMapping("/change/pwd")
     public SaResult changePwd(@RequestBody ChangePwdRequest request) {
         return adminService.changePwd(request);

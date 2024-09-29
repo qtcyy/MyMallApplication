@@ -2,6 +2,7 @@ package org.example.mymallapplication.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaIgnore;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.service.UserService;
 import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
@@ -10,6 +11,8 @@ import org.example.mymallapplication.dal.vo.request.UserLoginRequest;
 import org.example.mymallapplication.dal.vo.request.UserRegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/user")
@@ -27,6 +30,16 @@ public class UserController {
     @RequestMapping("/register")
     public SaResult doRegister(@RequestBody UserRegisterRequest request) {
         return userService.userRegister(request);
+    }
+
+    @SaCheckLogin
+    @RequestMapping("/isLogin")
+    public SaResult isLogin() {
+        if (StpUtil.getRoleList().equals(Collections.emptyList())) {
+            return SaResult.ok("普通用户登陆");
+        } else {
+            return SaResult.error("管理员禁用");
+        }
     }
 
     @SaCheckLogin
@@ -54,8 +67,8 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @PostMapping("/info/address")
-    public SaResult setAddress(@RequestParam String address) {
+    @PostMapping("/info/address/{address}")
+    public SaResult setAddress(@PathVariable String address) {
         return userService.setAddress(address);
     }
 
