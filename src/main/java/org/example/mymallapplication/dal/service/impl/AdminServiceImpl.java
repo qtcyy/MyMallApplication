@@ -3,6 +3,10 @@ package org.example.mymallapplication.dal.service.impl;
 import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import lombok.extern.slf4j.Slf4j;
+import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
 import org.example.mymallapplication.dal.dao.entity.person.Users;
 import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersService;
@@ -22,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class AdminServiceImpl implements AdminService {
     @Autowired
@@ -91,7 +96,8 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public SaResult changePwd(ChangePwdRequest request) {
-        String userId = (String) StpUtil.getLoginId();
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
         Users user = usersService.getById(userId);
         if (redis.hasKey(user.getUsername())) {
             redis.deleteKey(user.getUsername());
@@ -103,6 +109,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         StpUtil.logout();
+        BaseContext.clear();
         return SaResult.ok("更改成功！请重新登陆");
     }
 
@@ -113,7 +120,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public List<String> getRole() {
-        String userId = (String) StpUtil.getLoginId();
+        String userId = StpUtil.getLoginIdAsString();
         if (!usersService.hasUser(userId)) {
             return Collections.emptyList();
         }
@@ -127,7 +134,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public List<String> getPermission() {
-        String userId = (String) StpUtil.getLoginId();
+        String userId = StpUtil.getLoginIdAsString();
         return dbService.getPermissions(userId);
     }
 
@@ -140,55 +147,58 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public SaResult changeUserInfo(String mode, UpdateUserRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         switch (mode) {
             case "insert": {
                 if (service.hasUser(request.getUsername())) {
                     return SaResult.error("已存在");
                 }
                 FrontendUsers users = new FrontendUsers();
-                users.setUsername(request.getUsername());
-                users.setPassword(SaSecureUtil.sha256(request.getPassword()));
-                users.setPhone(request.getPhone());
-                users.setEmail(request.getEmail());
-                users.setGender(request.getGender());
-                if (service.save(users)) {
-                    return SaResult.ok("添加成功");
+                BeanUtil.copyProperties(request, users, CopyOptions.create().setIgnoreNullValue(true));
+                if (request.getPassword() != null)
+                    users.setPassword(SaSecureUtil.sha256(request.getPassword()));
+
+                try {
+                    if (service.save(users)) {
+                        BaseContext.clear();
+                        return SaResult.ok("添加成功");
+                    } else {
+                        throw new Exception("数据库错误");
+                    }
+                } catch (Exception e) {
+                    log.error("插入添加失败: {}", e.toString());
+                    BaseContext.clear();
+                    return SaResult.error("添加失败" + e.toString());
                 }
-                return SaResult.error("添加失败");
             }
             case "update": {
                 if (!service.hasUser(request.getUsername())) {
+                    BaseContext.clear();
                     return SaResult.error("用户不存在");
                 }
 
                 FrontendUsers users = service.getFrontendUsers(request.getUsername());
+                BeanUtil.copyProperties(request, users, CopyOptions.create().setIgnoreNullValue(true));
+                if (request.getPassword() != null)
+                    users.setPassword(SaSecureUtil.sha256(request.getPassword()));
 
-                if (request.getGender() != null) {
-                    users.setGender(request.getGender());
-                }
-                if (request.getAddress() != null) {
-                    users.setAddress(request.getAddress());
-                }
-                if (request.getLocation() != null) {
-                    users.setLocation(request.getLocation());
-                }
-                if (request.getPoint() != null) {
-                    users.setPoint(request.getPoint());
-                }
-                if (request.getPhone() != null) {
-                    users.setPhone(request.getPhone());
-                }
-                if (request.getEmail() != null) {
-                    users.setEmail(request.getEmail());
-                }
+                try {
+                    if (service.updateById(users)) {
+                        BaseContext.clear();
+                        return SaResult.ok("修改成功");
+                    } else {
+                        throw new Exception("数据库更新失败");
+                    }
 
-                if (service.updateById(users)) {
-                    return SaResult.ok("修改成功");
+                } catch (Exception e) {
+                    log.error("更新添加失败: {}", e.toString());
+                    BaseContext.clear();
+                    return SaResult.error("修改失败!" + e.toString());
                 }
-                return SaResult.error("修改失败!");
             }
 
         }
+        BaseContext.clear();
         return SaResult.error("类型错误");
     }
 }

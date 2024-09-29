@@ -21,19 +21,19 @@ public class UserController {
     UserService userService;
 
     @SaIgnore
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public SaResult doLogin(@RequestBody UserLoginRequest request) {
         return userService.userLogin(request);
     }
 
     @SaIgnore
-    @RequestMapping("/register")
+    @PostMapping("/register")
     public SaResult doRegister(@RequestBody UserRegisterRequest request) {
         return userService.userRegister(request);
     }
 
     @SaCheckLogin
-    @RequestMapping("/isLogin")
+    @GetMapping("/isLogin")
     public SaResult isLogin() {
         if (StpUtil.getRoleList().equals(Collections.emptyList())) {
             return SaResult.ok("普通用户登陆");
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @RequestMapping("/change/pwd")
+    @PostMapping("/change/pwd")
     public SaResult changePwd(ChangePwdRequest request) {
         return userService.changePwd(request);
     }
@@ -55,13 +55,13 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @RequestMapping("/balance/recharge/{money}")
+    @GetMapping("/balance/recharge/{money}")
     public SaResult rechargeBalance(@PathVariable double money) {
         return userService.rechargeBalance(money);
     }
 
     @SaCheckLogin
-    @RequestMapping("/balance/withdraw/{money}")
+    @GetMapping("/balance/withdraw/{money}")
     public SaResult withdrawBalance(@PathVariable double money) {
         return userService.withdrawBalance(money);
     }
@@ -73,7 +73,7 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @RequestMapping("/order/confirm")
+    @PostMapping("/order/confirm")
     public SaResult confirmOrder(@RequestBody ConfirmOrderRequest request) {
         return userService.confirmOrder(request);
     }

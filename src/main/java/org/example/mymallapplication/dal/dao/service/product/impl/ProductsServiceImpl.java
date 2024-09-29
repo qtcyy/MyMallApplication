@@ -71,7 +71,8 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     @Override
     public Products getProducts(String str) {
         LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Products::getName, str).or().eq(Products::getId, str);
+        queryWrapper.eq(Products::getName, str).or().eq(Products::getId, str)
+                .last("LIMIT 1");
         return this.getOne(queryWrapper);
     }
 

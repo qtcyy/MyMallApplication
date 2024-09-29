@@ -1,6 +1,10 @@
 package org.example.mymallapplication.dal.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.dao.entity.product.Orders;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
 import org.example.mymallapplication.dal.dao.service.product.ICategoryService;
@@ -35,10 +39,13 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public SaResult saveProduct(Products product) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (productsService.saveProduct(product)) {
+            BaseContext.clear();
             return SaResult.ok("保存成功！");
         }
 
+        BaseContext.clear();
         return SaResult.error("保存失败!");
     }
 
@@ -65,24 +72,17 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public SaResult changeProduct(Products newProduct) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         Products product = productsService.getProducts(newProduct.getId());
-        if (newProduct.getName() != null) {
-            product.setName(newProduct.getName());
-        }
-        if (newProduct.getDescription() != null) {
-            product.setDescription(newProduct.getDescription());
-        }
-        if (newProduct.getNumber() != null) {
-            product.setNumber(newProduct.getNumber());
-        }
-        if (newProduct.getPrice() != null) {
-            product.setPrice(newProduct.getPrice());
-        }
+
+        BeanUtil.copyProperties(newProduct, product, CopyOptions.create().setIgnoreNullValue(true));
 
         if (productsService.changeProduct(product)) {
+            BaseContext.clear();
             return SaResult.ok("更新成功!");
         }
 
+        BaseContext.clear();
         return SaResult.error("更新失败!");
     }
 
@@ -94,9 +94,12 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public SaResult deleteProduct(String id) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (productsService.deleteProduct(id)) {
+            BaseContext.clear();
             return SaResult.ok("删除成功！");
         }
+        BaseContext.clear();
         return SaResult.error("删除失败！");
     }
 
@@ -108,6 +111,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public SaResult shipProduct(ShippingRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         List<String> orderIds = request.getOrderIds();
         List<Orders> orders = ordersService.getOrders(orderIds);
         orders.forEach(order -> {
@@ -117,6 +121,7 @@ public class ProductServiceImpl implements ProductService {
         ordersService.saveBatch(orders);
         tableService.toFifteenDaysQueue(orderIds);
 
+        BaseContext.clear();
         return SaResult.ok("发货成功！");
     }
 

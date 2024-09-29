@@ -2,8 +2,10 @@ package org.example.mymallapplication.dal.dao.entity.person;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.mymallapplication.dal.dao.entity.info.UpdateInfo;
 
 import java.io.Serializable;
 
@@ -16,7 +18,9 @@ import java.io.Serializable;
  * @since 2024-09-18
  */
 @Schema(name = "Permissions对象", description = "")
-public class Permissions implements Serializable {
+@Getter
+@Setter
+public class Permissions extends UpdateInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,39 +29,12 @@ public class Permissions implements Serializable {
 
     private String permission;
 
-    @TableLogic
-    private Boolean deleted;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
     @Override
     public String toString() {
         return "Permissions{" +
                 "id = " + id +
                 ", permission = " + permission +
-                ", deleted = " + deleted +
+                ", deleted = " + this.getDeleted() +
                 "}";
     }
 }

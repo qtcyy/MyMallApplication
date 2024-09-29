@@ -45,7 +45,7 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
     @Override
     public String getUserId(String orderId) {
         LambdaQueryWrapper<UserOrder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(UserOrder::getOrderId, orderId);
+        queryWrapper.eq(UserOrder::getOrderId, orderId).last("LIMIT 1");
 
         return this.getOne(queryWrapper).getUserId();
     }

@@ -86,7 +86,7 @@ public class RedisServiceImpl implements RedisService {
      */
     @Override
     public FrontendUsers getUserFromRedis(String key) {
-        String jsonStr = (String) redisTemplate.opsForValue().get(key);
+        String jsonStr = String.valueOf(redisTemplate.opsForValue().get(key));
         return JSONUtil.toBean(jsonStr, FrontendUsers.class);
     }
 
@@ -156,7 +156,7 @@ public class RedisServiceImpl implements RedisService {
      */
     @Override
     public Users getAdmin(String key) {
-        String jsonStr = (String) redisTemplate.opsForValue().get(key);
+        String jsonStr = String.valueOf(redisTemplate.opsForValue().get(key));
         return JSONUtil.toBean(jsonStr, Users.class);
     }
 

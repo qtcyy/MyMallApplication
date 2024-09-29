@@ -2,6 +2,7 @@ package org.example.mymallapplication.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.util.SaResult;
+import jakarta.validation.Valid;
 import org.example.mymallapplication.dal.service.TableService;
 import org.example.mymallapplication.dal.vo.request.BuyProductRequest;
 import org.example.mymallapplication.dal.vo.request.OrderCancelRequest;
@@ -15,19 +16,19 @@ public class TableController {
     TableService tableService;
 
     @SaCheckLogin
-    @RequestMapping("/product/search/{name}")
+    @GetMapping("/product/search/{name}")
     public SaResult getProduct(@PathVariable String name) {
         return tableService.getProduct(name);
     }
 
     @SaCheckLogin
-    @RequestMapping("/product/buy")
-    public SaResult buyProduct(@RequestBody BuyProductRequest request) {
+    @PostMapping("/product/buy")
+    public SaResult buyProduct(@Valid @RequestBody BuyProductRequest request) {
         return tableService.buyProduct(request);
     }
 
     @SaCheckLogin
-    @RequestMapping("/product/cancel")
+    @PostMapping("/product/cancel")
     public SaResult orderCancel(@RequestBody OrderCancelRequest request) {
         return tableService.orderCancel(request);
     }

@@ -137,20 +137,24 @@ public class ScheduledServiceImpl implements ScheduledService {
     public void processOrderConfirm(Orders order, @Header(value = "handle-confirm", required = false) String headerKey) {
         rateLimiter.acquire();
         if (headerKey.equals("handle-confirm")) {
-            log.info("handle-confirm order: " + order.getId());
+            log.info("handle-confirm order: {}", order.getId());
         } else if (headerKey.equals("x-delay")) {
-            log.info("auto-confirm order: " + order.getId());
+            log.info("auto-confirm order: {}", order.getId());
         }
 
         String orderId = order.getId();
         String adminId = adminOrderService.getAdminId(orderId);
         AdminBalance balance = adminBalanceService.getAdminBalance(adminId);
         balance.setBalance(balance.getBalance() + order.getPrice());
-        if (!order.getState().equals(State.END)) {
-            order.setState(State.END);
-            ordersService.updateById(order);
+        try {
+            if (!order.getState().equals(State.END)) {
+                order.setState(State.END);
+                ordersService.updateById(order);
+            }
+            adminBalanceService.updateById(balance);
+        } catch (Exception e) {
+            log.error("确认收货数据库处理错误: {}", e.toString());
         }
-        adminBalanceService.updateById(balance);
     }
 
     /**
@@ -171,11 +175,16 @@ public class ScheduledServiceImpl implements ScheduledService {
             String userId = userOrderService.getUserId(order.getId());
             Balance balance = balanceService.getBalanceByUserId(userId);
             balance.setBalance(balance.getBalance() + order.getPrice());
-            balanceService.updateById(balance);
-            String productId = productOrderService.getProductId(order.getId());
-            Products product = productsService.getProducts(productId);
-            product.setNumber(product.getNumber() + order.getNumber());
-            productsService.updateById(product);
+
+            try {
+                balanceService.updateById(balance);
+                String productId = productOrderService.getProductId(order.getId());
+                Products product = productsService.getProducts(productId);
+                product.setNumber(product.getNumber() + order.getNumber());
+                productsService.updateById(product);
+            } catch (Exception e) {
+                log.error("取消订单数据库处理错误: {}", e.toString());
+            }
         }
     }
 }

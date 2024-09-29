@@ -29,7 +29,7 @@ public class BalanceServiceImpl extends ServiceImpl<BalanceMapper, Balance> impl
     @Override
     public Balance getBalanceByUserId(String userId) {
         LambdaQueryWrapper<Balance> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Balance::getUserId, userId);
+        queryWrapper.eq(Balance::getUserId, userId).last("LIMIT 1");
         return this.getOne(queryWrapper);
     }
 

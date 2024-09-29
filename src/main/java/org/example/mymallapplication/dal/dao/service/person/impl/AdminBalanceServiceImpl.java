@@ -27,8 +27,8 @@ public class AdminBalanceServiceImpl extends ServiceImpl<AdminBalanceMapper, Adm
     @Override
     public AdminBalance getAdminBalance(String adminId) {
         LambdaQueryWrapper<AdminBalance> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(AdminBalance::getAdminId, adminId);
+        queryWrapper.eq(AdminBalance::getAdminId, adminId).last("LIMIT 1");
 
-        return this.getOne(queryWrapper);
+        return this.list(queryWrapper).get(0);
     }
 }

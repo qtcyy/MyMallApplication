@@ -1,10 +1,13 @@
 package org.example.mymallapplication.dal.dao.entity.product;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.mymallapplication.dal.dao.entity.info.UpdateInfo;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -15,7 +18,9 @@ import java.time.LocalDateTime;
  * @since 2024-09-20
  */
 @Schema(name = "Products对象", description = "")
-public class Products implements Serializable {
+@Getter
+@Setter
+public class Products extends UpdateInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,79 +35,6 @@ public class Products implements Serializable {
 
     private Double price;
 
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-
-    @TableLogic
-    private Boolean deleted;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Integer getNumber() {
-        return number;
-    }
-
-    public void setNumber(Integer number) {
-        this.number = number;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
     @Override
     public String toString() {
         return "Products{" +
@@ -111,9 +43,9 @@ public class Products implements Serializable {
                 ", description = " + description +
                 ", number = " + number +
                 ", price = " + price +
-                ", createTime = " + createTime +
-                ", updateTime = " + updateTime +
-                ", deleted = " + deleted +
+                ", createTime = " + super.getCreateTime() +
+                ", updateTime = " + super.getUpdateTime() +
+                ", deleted = " + super.getDeleted() +
                 "}";
     }
 }

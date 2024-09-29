@@ -3,6 +3,9 @@ package org.example.mymallapplication.dal.service.impl;
 import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.bean.BeanUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.config.RabbitMQConfig;
 import org.example.mymallapplication.dal.dao.entity.person.Balance;
 import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
     @Autowired
@@ -79,20 +83,19 @@ public class UserServiceImpl implements UserService {
             return SaResult.error("用户名已存在！");
         }
         FrontendUsers users = new FrontendUsers();
-        users.setUsername(request.getUsername());
+        BeanUtil.copyProperties(request, users);
+
         users.setPassword(SaSecureUtil.sha256(request.getPassword()));
-        users.setNickname(request.getNickname());
-        users.setLocation(request.getLocation());
-        users.setPhone(request.getPhone());
-        users.setEmail(request.getEmail());
-        users.setGender(request.getGender());
+        try {
+            usersService.save(users);
 
-        usersService.save(users);
-
-
-        Balance balance = new Balance();
-        balance.setUserId(users.getId());
-        balanceService.save(balance);
+            Balance balance = new Balance();
+            balance.setUserId(users.getId());
+            balanceService.save(balance);
+        } catch (Exception e) {
+            log.error("用户注册数据库错误: {}", e.toString());
+            return SaResult.error("用户数据库错误");
+        }
 
         return SaResult.ok("注册成功！");
     }
@@ -105,7 +108,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public SaResult changePwd(ChangePwdRequest request) {
-        String userId = (String) StpUtil.getLoginId();
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
+        String userId = StpUtil.getLoginIdAsString();
         FrontendUsers user = usersService.getFrontendUsers(userId);
         if (redis.hasKey(user.getUsername())) {
             redis.deleteKey(user.getUsername());
@@ -113,10 +117,12 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(SaSecureUtil.sha256(request.getPassword()));
         if (!usersService.updateById(user)) {
+            BaseContext.clear();
             return SaResult.error("改密失败，请重新更改！");
         }
 
         StpUtil.logout();
+        BaseContext.clear();
         return SaResult.ok("改密成功，请重新登陆！");
     }
 
@@ -128,14 +134,16 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public SaResult rechargeBalance(double money) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         //查询是否到账(Api待补全)
 
         //更新数据库
-        String userId = (String) StpUtil.getLoginId();
+        String userId = StpUtil.getLoginIdAsString();
         Balance balance = balanceService.getBalanceByUserId(userId);
         balance.setBalance(balance.getBalance() + money);
         balanceService.updateById(balance);
 
+        BaseContext.clear();
         return SaResult.ok("充值成功！");
     }
 
@@ -147,10 +155,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public SaResult withdrawBalance(double money) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         //查询是否到账(Api待补全)
 
         //更新数据库
-        String userId = (String) StpUtil.getLoginId();
+        String userId = StpUtil.getLoginIdAsString();
         Balance balance = balanceService.getBalanceByUserId(userId);
         if (balance.getBalance() < money) {
             return SaResult.error("余额不足！");
@@ -158,6 +167,7 @@ public class UserServiceImpl implements UserService {
         balance.setBalance(balance.getBalance() - money);
         balanceService.updateById(balance);
 
+        BaseContext.clear();
         return SaResult.ok("提现成功！");
     }
 
@@ -168,13 +178,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public SaResult getUserInfo() {
-        String username = (String) StpUtil.getSession().get("username");
+        String username = String.valueOf(StpUtil.getSession().get("username"));
         if (redis.hasKey(username)) {
             FrontendUsers users = redis.getUserFromRedis(username);
             return SaResult.ok("success").setData(users);
         }
 
-        FrontendUsers users = usersService.getFrontendUsers((String) StpUtil.getLoginId());
+        FrontendUsers users = usersService.getFrontendUsers(StpUtil.getLoginIdAsString());
         redis.saveUserToRedis(username, users);
 
         return SaResult.ok("success").setData(users);
@@ -188,11 +198,19 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public SaResult setAddress(String address) {
-        if (usersService.updateAddress((String) StpUtil.getLoginId(), address)) {
-            return SaResult.ok("success");
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
+        try {
+            if (usersService.updateAddress(StpUtil.getLoginIdAsString(), address)) {
+                BaseContext.clear();
+                return SaResult.ok("success");
+            } else {
+                throw new Exception("数据库操作错误");
+            }
+        } catch (Exception e) {
+            log.error("设置地址数据库错误: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("服务器错误" + e.toString());
         }
-
-        return SaResult.error("服务器错误");
     }
 
     /**
@@ -211,14 +229,18 @@ public class UserServiceImpl implements UserService {
             return SaResult.error("还未发货！");
         }
         order.setState(State.FINISH);
-//        ordersService.updateById(order);
-        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_CONFIRM_EXCHANGE_NAME,
-                RabbitMQConfig.ORDER_CONFIRM_ROUTING_KEY, order, message -> {
-                    message.getMessageProperties().getHeaders().putAll(new HashMap<>() {{
-                        put("handle-confirm", request.getOrderId());
-                    }});
-                    return message;
-                });
+        try {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_CONFIRM_EXCHANGE_NAME,
+                    RabbitMQConfig.ORDER_CONFIRM_ROUTING_KEY, order, message -> {
+                        message.getMessageProperties().getHeaders().putAll(new HashMap<>() {{
+                            put("handle-confirm", request.getOrderId());
+                        }});
+                        return message;
+                    });
+        } catch (Exception e) {
+            log.error("添加到延迟队列失败: {}", e.toString());
+            return SaResult.error("添加到延迟队列失败:" + e.toString());
+        }
 
         return SaResult.ok("确认收货成功！");
     }

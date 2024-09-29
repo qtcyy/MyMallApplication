@@ -1,10 +1,14 @@
 package org.example.mymallapplication.dal.dao.entity.product;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.mymallapplication.dal.dao.entity.info.UpdateInfo;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -16,7 +20,9 @@ import java.time.LocalDateTime;
  */
 @TableName("product_cate")
 @Schema(name = "ProductCate对象", description = "")
-public class ProductCate implements Serializable {
+@Getter
+@Setter
+public class ProductCate extends UpdateInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,62 +33,6 @@ public class ProductCate implements Serializable {
 
     private String categoryId;
 
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-
-    @TableLogic
-    private Boolean deleted;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
 
     @Override
     public String toString() {
@@ -90,9 +40,9 @@ public class ProductCate implements Serializable {
                 "id = " + id +
                 ", productId = " + productId +
                 ", categoryId = " + categoryId +
-                ", createTime = " + createTime +
-                ", updateTime = " + updateTime +
-                ", deleted = " + deleted +
+                ", createTime = " + super.getCreateTime() +
+                ", updateTime = " + super.getUpdateTime() +
+                ", deleted = " + super.getDeleted() +
                 "}";
     }
 }

@@ -23,25 +23,25 @@ public class AdminController {
     AdminService adminService;
 
     @SaIgnore
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public SaResult adminLogin(@RequestBody AdminLoginRequest request) {
         return adminService.adminLogin(request);
     }
 
     @SaIgnore
-    @RequestMapping("/register")
+    @PostMapping("/register")
     public SaResult adminRegister(@RequestBody AdminRegisterRequest request) {
         return adminService.adminRegister(request);
     }
 
     @SaCheckRole(value = "admin")
-    @RequestMapping("/change/pwd")
+    @PostMapping("/change/pwd")
     public SaResult changePwd(@RequestBody ChangePwdRequest request) {
         return adminService.changePwd(request);
     }
 
     @SaIgnore
-    @RequestMapping("/logout")
+    @GetMapping("/logout")
     public SaResult adminLogout() {
         if (StpUtil.isLogin()) {
             StpUtil.logout();
@@ -64,7 +64,7 @@ public class AdminController {
     }
 
     @SaCheckPermission(value = {"change", "add"}, mode = SaMode.AND)
-    @RequestMapping("/changeUser/{mode}")
+    @PostMapping("/changeUser/{mode}")
     public SaResult changeUserInfo(@PathVariable String mode, @RequestBody UpdateUserRequest request) {
         return adminService.changeUserInfo(mode, request);
     }

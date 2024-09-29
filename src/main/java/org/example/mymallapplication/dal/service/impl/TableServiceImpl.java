@@ -3,6 +3,7 @@ package org.example.mymallapplication.dal.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import lombok.extern.slf4j.Slf4j;
+import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.config.RabbitMQConfig;
 import org.example.mymallapplication.dal.dao.entity.person.Balance;
 import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
@@ -80,11 +81,14 @@ public class TableServiceImpl implements TableService {
      */
     @Override
     public SaResult buyProduct(BuyProductRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!productsService.hasProduct(request.getProductId())) {
+            BaseContext.clear();
             return SaResult.error("不存在商品ID");
         }
         Products product = productsService.getProducts(request.getProductId());
         if (product.getNumber() < request.getNumber()) {
+            BaseContext.clear();
             return SaResult.error("超量购买!");
         }
 
@@ -93,6 +97,7 @@ public class TableServiceImpl implements TableService {
         double orgBalance = balance.getBalance();
 
         if (balance.getBalance() < product.getPrice() * request.getNumber()) {
+            BaseContext.clear();
             return SaResult.error("余额不足！");
         }
 
@@ -102,6 +107,7 @@ public class TableServiceImpl implements TableService {
         if (!productsService.updateById(product)) {
             balance.setBalance(orgBalance);
             balanceService.updateById(balance);
+            BaseContext.clear();
             return SaResult.error("购买失败！");
         }
 
@@ -118,6 +124,7 @@ public class TableServiceImpl implements TableService {
         if (!ordersService.save(order)) {
             balance.setBalance(orgBalance);
             balanceService.updateById(balance);
+            BaseContext.clear();
             return SaResult.error("购买失败!");
         }
 
@@ -129,6 +136,7 @@ public class TableServiceImpl implements TableService {
             ordersService.removeById(order);
             balance.setBalance(orgBalance);
             balanceService.updateById(balance);
+            BaseContext.clear();
             return SaResult.error(("购买失败！"));
         }
 
@@ -141,6 +149,7 @@ public class TableServiceImpl implements TableService {
             ordersService.removeById(order);
             balance.setBalance(orgBalance);
             balanceService.updateById(balance);
+            BaseContext.clear();
             return SaResult.error("购买失败！");
         }
 
@@ -148,6 +157,7 @@ public class TableServiceImpl implements TableService {
         int point = random.nextInt(50) + 80 + user.getPoint();
         user.setPoint(point);
         if (!usersService.updateById(user)) {
+            BaseContext.clear();
             return SaResult.ok("购买成功！但加积分失败");
         }
 
@@ -173,6 +183,7 @@ public class TableServiceImpl implements TableService {
                     return message;
                 });
 
+        BaseContext.clear();
         return SaResult.ok("下单成功！");
     }
 
@@ -184,6 +195,7 @@ public class TableServiceImpl implements TableService {
      */
     @Override
     public SaResult orderCancel(OrderCancelRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         Orders order = ordersService.getById(request.getOrderId());
         order.setState(State.valueOf("CANCEL"));
         String productId = productOrderService.getProductId(order.getId());
@@ -191,8 +203,10 @@ public class TableServiceImpl implements TableService {
         product.setNumber(product.getNumber() + order.getNumber());
 
         if (!ordersService.updateById(order) || !productsService.updateById(product)) {
+            BaseContext.clear();
             return SaResult.error("取消失败！");
         }
+        BaseContext.clear();
         return SaResult.ok("取消成功!");
     }
 
@@ -203,7 +217,7 @@ public class TableServiceImpl implements TableService {
      */
     @Override
     public SaResult getMyOrder() {
-        String userId = (String) StpUtil.getLoginId();
+        String userId = StpUtil.getLoginIdAsString();
         List<String> orderId = userOrderService.getOrderId(userId);
         if (orderId.isEmpty()) {
             return SaResult.error("无订单信息！");

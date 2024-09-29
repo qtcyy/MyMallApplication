@@ -26,7 +26,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     @Override
     public String getIdByName(String username) {
         LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Users::getUsername, username);
+        queryWrapper.eq(Users::getUsername, username).last("LIMIT 1");
         return this.getOne(queryWrapper).getId();
     }
 
@@ -52,7 +52,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     @Override
     public Users getUser(String username) {
         LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Users::getUsername, username);
+        queryWrapper.eq(Users::getUsername, username).last("LIMIT 1");
 
         return this.getOne(queryWrapper);
     }

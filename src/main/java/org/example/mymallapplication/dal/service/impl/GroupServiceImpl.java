@@ -1,6 +1,9 @@
 package org.example.mymallapplication.dal.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.bean.BeanUtil;
+import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.dao.entity.product.Category;
 import org.example.mymallapplication.dal.dao.entity.product.ProductCate;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
@@ -34,20 +37,20 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public SaResult saveCate(CategoryRequest request) {
-        if (request.getName() == null || request.getDescription() == null) {
-            return SaResult.error("有空变量！");
-        }
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (categoryService.hasCate(request.getName())) {
+            BaseContext.clear();
             return SaResult.error("已存在类别!");
         }
 
         Category category = new Category();
-        category.setName(request.getName());
-        category.setDescription(request.getDescription());
+        BeanUtil.copyProperties(request, category);
+
         if (categoryService.saveCate(category)) {
+            BaseContext.clear();
             return SaResult.ok("保存成功！");
         }
-
+        BaseContext.clear();
         return SaResult.error("保存失败！");
     }
 
@@ -59,14 +62,18 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public SaResult deleteCate(String id) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!categoryService.hasCate(id)) {
+            BaseContext.clear();
             return SaResult.error("不存在类别");
         }
 
         //包含删除映射信息
         if (productCateService.deleteByCate(id) && categoryService.deleteCate(id)) {
+            BaseContext.clear();
             return SaResult.ok("删除成功");
         }
+        BaseContext.clear();
         return SaResult.error("删除失败！");
     }
 
@@ -120,22 +127,20 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public SaResult changeCate(String id, CategoryRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!categoryService.hasCate(id)) {
             return SaResult.error("无此类别！");
         }
 
         Category category = categoryService.getById(id);
-        if (request.getName() != null) {
-            category.setName(request.getName());
-        }
-        if (request.getDescription() != null) {
-            category.setDescription(request.getDescription());
-        }
+        BeanUtil.copyProperties(request, category);
 
         if (categoryService.updateCategory(id, category)) {
+            BaseContext.clear();
             return SaResult.ok("修改成功！");
         }
 
+        BaseContext.clear();
         return SaResult.error("修改失败!");
     }
 
@@ -147,7 +152,9 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public SaResult groupCate(GroupCateRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!categoryService.hasCate(request.getCateId())) {
+            BaseContext.clear();
             return SaResult.error("无此类别！");
         }
 
@@ -170,8 +177,10 @@ public class GroupServiceImpl implements GroupService {
         }
 
         if (errList.isEmpty()) {
+            BaseContext.clear();
             return SaResult.ok("保存成功！");
         }
+        BaseContext.clear();
         return SaResult.error("有产品不存在，已返回ID").setData(errList);
     }
 
@@ -183,24 +192,12 @@ public class GroupServiceImpl implements GroupService {
      */
     @Override
     public SaResult deleteGroup(GroupCateRequest request) {
+        BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!categoryService.hasCate(request.getCateId())) {
+            BaseContext.clear();
             return SaResult.error("无此类别！");
         }
 
-        /*
-        for (Long id : request.getProductIds()) {
-            if (!productsService.hasProduct(id)) {
-                errList.add(id);
-                continue;
-            }
-            if (!productCateService.hasGroup(request.getCateId(), id)) {
-                errList.add(id);
-                continue;
-            }
-
-            productCateService.deleteGroup(request.getCateId(), id);
-        }
-        */
         List<String> productIds = request.getProductIds();
         List<String> existingIds = productsService.getExistingProductIds(productIds);
 
@@ -210,11 +207,14 @@ public class GroupServiceImpl implements GroupService {
 
         if (productCateService.removeBatchByIds(delProductCate)) {
             if (errList.isEmpty()) {
+                BaseContext.clear();
                 return SaResult.ok("删除成功！");
             }
+            BaseContext.clear();
             return SaResult.error("有错误！已返回有问题的产品ID").setData(errList);
         }
 
+        BaseContext.clear();
         return SaResult.error("删除失败！");
     }
 }

@@ -40,7 +40,7 @@ public class FrontendUsersServiceImpl extends ServiceImpl<FrontendUsersMapper, F
     @Override
     public String getUserIdByName(String username) {
         LambdaQueryWrapper<FrontendUsers> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(FrontendUsers::getUsername, username);
+        queryWrapper.eq(FrontendUsers::getUsername, username).last("LIMIT 1");
         return this.getOne(queryWrapper).getId();
     }
 
@@ -53,7 +53,8 @@ public class FrontendUsersServiceImpl extends ServiceImpl<FrontendUsersMapper, F
     @Override
     public FrontendUsers getFrontendUsers(String str) {
         LambdaQueryWrapper<FrontendUsers> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(FrontendUsers::getId, str).or().eq(FrontendUsers::getUsername, str);
+        queryWrapper.eq(FrontendUsers::getId, str).or().eq(FrontendUsers::getUsername, str)
+                .last("LIMIT 1");
         return this.getOne(queryWrapper);
     }
 

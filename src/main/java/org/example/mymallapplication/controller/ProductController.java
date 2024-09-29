@@ -24,7 +24,7 @@ public class ProductController {
     }
 
     @SaCheckPermission("add")
-    @RequestMapping("/insert")
+    @PostMapping("/insert")
     public SaResult saveProduct(@RequestBody Products product) {
         return productService.saveProduct(product);
     }
@@ -36,7 +36,7 @@ public class ProductController {
     }
 
     @SaCheckPermission("change")
-    @RequestMapping("/change")
+    @PostMapping("/change")
     public SaResult changeProduct(@RequestBody Products product) {
         return productService.changeProduct(product);
     }
@@ -48,7 +48,7 @@ public class ProductController {
     }
 
     @SaCheckPermission(value = {"change", "add"}, mode = SaMode.OR)
-    @RequestMapping("/shipping")
+    @PostMapping("/shipping")
     public SaResult shipProduct(@RequestBody ShippingRequest request) {
         return productService.shipProduct(request);
     }

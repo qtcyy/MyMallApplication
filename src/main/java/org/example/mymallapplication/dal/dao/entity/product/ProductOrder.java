@@ -1,12 +1,14 @@
 package org.example.mymallapplication.dal.dao.entity.product;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.mymallapplication.dal.dao.entity.info.UpdateInfo;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -18,7 +20,9 @@ import java.time.LocalDateTime;
  */
 @TableName("product_order")
 @Schema(name = "ProductOrder对象", description = "")
-public class ProductOrder implements Serializable {
+@Getter
+@Setter
+public class ProductOrder extends UpdateInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,45 +32,6 @@ public class ProductOrder implements Serializable {
     private String productId;
 
     private String orderId;
-
-    @Getter
-    @Setter
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    @Getter
-    @Setter
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-
-    @Getter
-    @Setter
-    @TableLogic
-    private boolean deleted;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
 
     @Override
     public String toString() {
