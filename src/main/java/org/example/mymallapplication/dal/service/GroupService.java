@@ -8,13 +8,13 @@ public interface GroupService {
 
     SaResult saveCate(CategoryRequest request);
 
-    SaResult deleteCate(Long id);
+    SaResult deleteCate(String id);
 
     SaResult getCate(String name);
 
-    SaResult getCate(Long id);
+    SaResult getCateById(String id);
 
-    SaResult changeCate(Long id, CategoryRequest request);
+    SaResult changeCate(String id, CategoryRequest request);
 
     SaResult groupCate(GroupCateRequest request);
 

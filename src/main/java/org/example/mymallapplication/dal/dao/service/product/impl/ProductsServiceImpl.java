@@ -32,42 +32,20 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
         return this.save(product);
     }
 
-    /**
-     * <p>根据商品ID判断是否存在</p>
-     *
-     * @param id 商品ID
-     * @return 是否存在
-     */
-    @Override
-    public boolean hasProduct(Long id) {
-        LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Products::getId, id);
-        return this.count(queryWrapper) > 0;
-    }
 
     /**
      * <p>根据商品名判断是否存在</p>
      *
-     * @param name 商品名
+     * @param str 商品名
      * @return 是否存在
      */
     @Override
-    public boolean hasProduct(String name) {
+    public boolean hasProduct(String str) {
         LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Products::getName, name);
+        queryWrapper.eq(Products::getName, str).or().eq(Products::getId, str);
         return this.count(queryWrapper) > 0;
     }
 
-    /**
-     * <p>根据ID获取商品信息</p>
-     *
-     * @param id 用户ID
-     * @return 商品
-     */
-    @Override
-    public Products getProducts(Long id) {
-        return this.getById(id);
-    }
 
     /**
      * <p>批量查询存在的ID</p>
@@ -76,7 +54,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
      * @return 存在的产品ID列表
      */
     @Override
-    public List<Long> getExistingProductIds(List<Long> productIds) {
+    public List<String> getExistingProductIds(List<String> productIds) {
         LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Products::getId, productIds);
 
@@ -91,9 +69,9 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
      * @return 商品信息
      */
     @Override
-    public Products getProducts(String name) {
+    public Products getProducts(String str) {
         LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Products::getName, name);
+        queryWrapper.eq(Products::getName, str).or().eq(Products::getId, str);
         return this.getOne(queryWrapper);
     }
 
@@ -104,7 +82,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
      * @return 产品列表
      */
     @Override
-    public List<Products> getProducts(List<Long> ids) {
+    public List<Products> getProducts(List<String> ids) {
         LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Products::getId, ids);
 
@@ -144,7 +122,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
      * @return 是否成功删除
      */
     @Override
-    public boolean deleteProduct(Long id) {
+    public boolean deleteProduct(String id) {
         return this.removeById(id);
     }
 }

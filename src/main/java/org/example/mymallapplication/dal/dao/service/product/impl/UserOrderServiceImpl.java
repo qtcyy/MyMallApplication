@@ -28,11 +28,25 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
      * @return 订单ID列表
      */
     @Override
-    public List<Long> getOrderId(Long userId) {
+    public List<String> getOrderId(String userId) {
         LambdaQueryWrapper<UserOrder> queryWrapper = new LambdaQueryWrapper<>();
 
         return this.list(queryWrapper).stream()
-                .map(obj -> Long.valueOf(obj.toString()))
+                .map(obj -> String.valueOf(obj.toString()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * <p>根据订单ID获取用户ID</p>
+     *
+     * @param orderId 订单ID
+     * @return 用户ID
+     */
+    @Override
+    public String getUserId(String orderId) {
+        LambdaQueryWrapper<UserOrder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserOrder::getOrderId, orderId);
+
+        return this.getOne(queryWrapper).getUserId();
     }
 }

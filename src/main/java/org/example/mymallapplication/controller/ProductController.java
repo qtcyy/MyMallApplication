@@ -43,7 +43,7 @@ public class ProductController {
 
     @SaCheckPermission("delete")
     @DeleteMapping("/delete/{id}")
-    public SaResult deleteProduct(@PathVariable Long id) {
+    public SaResult deleteProduct(@PathVariable String id) {
         return productService.deleteProduct(id);
     }
 

@@ -34,7 +34,7 @@ public class CodeGenerator {
                                 .pathInfo(Collections.singletonMap(OutputFile.xml, "/Users/chengyiyang/Desktop/程序设计/Java/")) // 设置mapperXml生成路径
                 )
                 .strategyConfig(builder -> {
-                            builder.addInclude("admin_order"); // 设置需要生成的表名
+                            builder.addInclude("admin_balance"); // 设置需要生成的表名
 //                            builder.addInclude("category");
 //                            builder.addInclude("product_cate");
 //                            builder.addInclude("orders");

@@ -1,8 +1,6 @@
 package org.example.mymallapplication.dal.dao.entity.product;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,8 +22,8 @@ public class Orders implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    @TableId(value = "id", type = IdType.ASSIGN_UUID)
+    private String id;
 
     private LocalDateTime time;
 
@@ -36,21 +34,32 @@ public class Orders implements Serializable {
     @TableField("state")
     private State state;
 
+    @Getter
+    @Setter
+    private Double price;
+
     private String address;
 
     private String remark;
 
+    @Getter
+    @Setter
+    private LocalDateTime shippingTime;
+
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
+    @TableLogic
     private Boolean deleted;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

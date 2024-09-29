@@ -18,6 +18,7 @@ import org.example.mymallapplication.dal.vo.response.AdminLoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -90,7 +91,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public SaResult changePwd(ChangePwdRequest request) {
-        Long userId = Long.parseLong((String) StpUtil.getLoginId());
+        String userId = (String) StpUtil.getLoginId();
         Users user = usersService.getById(userId);
         if (redis.hasKey(user.getUsername())) {
             redis.deleteKey(user.getUsername());
@@ -112,7 +113,10 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public List<String> getRole() {
-        Long userId = Long.parseLong((String) StpUtil.getLoginId());
+        String userId = (String) StpUtil.getLoginId();
+        if (!usersService.hasUser(userId)) {
+            return Collections.emptyList();
+        }
         return dbService.getRoles(userId);
     }
 
@@ -123,7 +127,7 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public List<String> getPermission() {
-        Long userId = Long.parseLong((String) StpUtil.getLoginId());
+        String userId = (String) StpUtil.getLoginId();
         return dbService.getPermissions(userId);
     }
 

@@ -27,12 +27,12 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
      * @return 角色ID列表
      */
     @Override
-    public List<Long> getRoleIds(Long userId) {
+    public List<String> getRoleIds(String userId) {
         LambdaQueryWrapper<UserRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserRole::getUserId, userId).select(UserRole::getRoleId);
 
         return this.baseMapper.selectObjs(queryWrapper).stream()
-                .map(obj -> Long.valueOf(obj.toString()))
+                .map(obj -> String.valueOf(obj.toString()))
                 .collect(Collectors.toList());
     }
 }

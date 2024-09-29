@@ -22,28 +22,15 @@ import java.util.List;
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements ICategoryService {
 
     /**
-     * <p>根据类别名判断是否存在</p>
-     *
-     * @param name 类别名
-     * @return 是否存在
-     */
-    @Override
-    public boolean hasCate(String name) {
-        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Category::getName, name);
-        return this.count(queryWrapper) > 0;
-    }
-
-    /**
      * <p>根据ID判断类别是否存在</p>
      *
      * @param id 类别ID
      * @return 是否存在
      */
     @Override
-    public boolean hasCate(Long id) {
+    public boolean hasCate(String str) {
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Category::getId, id);
+        queryWrapper.eq(Category::getId, str).or().eq(Category::getName, str);
         return this.count(queryWrapper) > 0;
     }
 
@@ -65,7 +52,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      * @return 删除状态
      */
     @Override
-    public boolean deleteCate(Long id) {
+    public boolean deleteCate(String id) {
         return this.removeById(id);
     }
 
@@ -93,7 +80,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      * @return 更新状态
      */
     @Override
-    public boolean updateCategory(Long id, Category category) {
+    public boolean updateCategory(String id, Category category) {
         LambdaUpdateWrapper<Category> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Category::getId, id);
 

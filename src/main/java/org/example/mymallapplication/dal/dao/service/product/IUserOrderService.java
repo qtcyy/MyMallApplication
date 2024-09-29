@@ -15,5 +15,7 @@ import java.util.List;
  */
 public interface IUserOrderService extends IService<UserOrder> {
 
-    List<Long> getOrderId(Long userId);
+    List<String> getOrderId(String userId);
+
+    String getUserId(String orderId);
 }

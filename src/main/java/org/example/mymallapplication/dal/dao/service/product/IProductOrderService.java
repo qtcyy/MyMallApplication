@@ -13,5 +13,5 @@ import org.example.mymallapplication.dal.dao.entity.product.ProductOrder;
  */
 public interface IProductOrderService extends IService<ProductOrder> {
 
-    Long getProductId(Long orderId);
+    String getProductId(String orderId);
 }

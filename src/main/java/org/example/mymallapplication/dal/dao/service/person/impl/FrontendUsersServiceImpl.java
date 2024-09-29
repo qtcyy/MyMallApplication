@@ -38,23 +38,10 @@ public class FrontendUsersServiceImpl extends ServiceImpl<FrontendUsersMapper, F
      * @return 用户ID
      */
     @Override
-    public Long getUserIdByName(String username) {
+    public String getUserIdByName(String username) {
         LambdaQueryWrapper<FrontendUsers> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FrontendUsers::getUsername, username);
         return this.getOne(queryWrapper).getId();
-    }
-
-    /**
-     * <p>根据用户名获取用户实体类</p>
-     *
-     * @param username 用户名
-     * @return 用户实体类
-     */
-    @Override
-    public FrontendUsers getFrontendUsers(String username) {
-        LambdaQueryWrapper<FrontendUsers> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(FrontendUsers::getUsername, username);
-        return this.getOne(queryWrapper);
     }
 
     /**
@@ -64,9 +51,9 @@ public class FrontendUsersServiceImpl extends ServiceImpl<FrontendUsersMapper, F
      * @return 用户实体类
      */
     @Override
-    public FrontendUsers getFrontendUsers(Long id) {
+    public FrontendUsers getFrontendUsers(String str) {
         LambdaQueryWrapper<FrontendUsers> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(FrontendUsers::getId, id);
+        queryWrapper.eq(FrontendUsers::getId, str).or().eq(FrontendUsers::getUsername, str);
         return this.getOne(queryWrapper);
     }
 
@@ -78,7 +65,7 @@ public class FrontendUsersServiceImpl extends ServiceImpl<FrontendUsersMapper, F
      * @return 更新状态
      */
     @Override
-    public boolean updateAddress(Long id, String address) {
+    public boolean updateAddress(String id, String address) {
         LambdaUpdateWrapper<FrontendUsers> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(FrontendUsers::getId, id).set(FrontendUsers::getAddress, address);
 

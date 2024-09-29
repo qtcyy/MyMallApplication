@@ -28,12 +28,12 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper,
      * @return 权限ID列表
      */
     @Override
-    public List<Long> getPermissionIds(List<Long> roleIds) {
+    public List<String> getPermissionIds(List<String> roleIds) {
         LambdaQueryWrapper<RolePermission> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(RolePermission::getRoleId, roleIds).select(RolePermission::getPermissionId);
 
         return this.baseMapper.selectObjs(queryWrapper).stream()
-                .map(obj -> Long.valueOf(obj.toString()))
+                .map(obj -> String.valueOf(obj.toString()))
                 .collect(Collectors.toList());
     }
 }

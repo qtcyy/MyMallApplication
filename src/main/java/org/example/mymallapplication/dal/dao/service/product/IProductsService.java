@@ -17,21 +17,17 @@ public interface IProductsService extends IService<Products> {
 
     boolean saveProduct(Products product);
 
-    boolean hasProduct(Long id);
+    boolean hasProduct(String str);
 
-    boolean hasProduct(String name);
+    List<String> getExistingProductIds(List<String> productIds);
 
-    Products getProducts(Long id);
+    Products getProducts(String str);
 
-    List<Long> getExistingProductIds(List<Long> productIds);
-
-    Products getProducts(String name);
-
-    List<Products> getProducts(List<Long> ids);
+    List<Products> getProducts(List<String> ids);
 
     List<Products> getProductsLike(String name);
 
     boolean changeProduct(Products product);
 
-    boolean deleteProduct(Long id);
+    boolean deleteProduct(String id);
 }

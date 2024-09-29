@@ -1,8 +1,11 @@
 package org.example.mymallapplication.dal.dao.service.product;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.example.mymallapplication.dal.dao.entity.product.Orders;
+import org.example.mymallapplication.dal.enums.State;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -15,5 +18,11 @@ import java.util.List;
  */
 public interface IOrdersService extends IService<Orders> {
 
-    List<Orders> getOrders(List<Long> orderIds);
+    List<Orders> getOrders(List<String> orderIds);
+
+    IPage<Orders> getOrderPageByState(IPage<Orders> page, State state);
+
+    List<Orders> getOrderByState(State state);
+
+    List<Orders> getOrderToConfirm(State state, LocalDateTime fifteenDaysTime);
 }

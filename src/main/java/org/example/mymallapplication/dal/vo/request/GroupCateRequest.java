@@ -6,6 +6,6 @@ import java.util.List;
 
 @Data
 public class GroupCateRequest {
-    Long cateId;
-    List<Long> productIds;
+    String cateId;
+    List<String> productIds;
 }

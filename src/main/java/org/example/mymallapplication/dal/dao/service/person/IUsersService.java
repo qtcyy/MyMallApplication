@@ -13,11 +13,9 @@ import org.example.mymallapplication.dal.dao.entity.person.Users;
  */
 public interface IUsersService extends IService<Users> {
 
-    Long getIdByName(String username);
+    String getIdByName(String username);
 
-    boolean hasUser(String username);
-
-    boolean hasUser(Long id);
+    boolean hasUser(String str);
 
     Users getUser(String username);
 }

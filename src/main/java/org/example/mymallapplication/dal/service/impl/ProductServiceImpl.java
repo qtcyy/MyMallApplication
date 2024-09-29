@@ -8,10 +8,12 @@ import org.example.mymallapplication.dal.dao.service.product.IOrdersService;
 import org.example.mymallapplication.dal.dao.service.product.IProductsService;
 import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.service.ProductService;
+import org.example.mymallapplication.dal.service.TableService;
 import org.example.mymallapplication.dal.vo.request.ShippingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,6 +24,8 @@ public class ProductServiceImpl implements ProductService {
     private ICategoryService categoryService;
     @Autowired
     private IOrdersService ordersService;
+    @Autowired
+    private TableService tableService;
 
     /**
      * <p>保存商品信息</p>
@@ -89,7 +93,7 @@ public class ProductServiceImpl implements ProductService {
      * @return 删除状态
      */
     @Override
-    public SaResult deleteProduct(Long id) {
+    public SaResult deleteProduct(String id) {
         if (productsService.deleteProduct(id)) {
             return SaResult.ok("删除成功！");
         }
@@ -104,12 +108,14 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public SaResult shipProduct(ShippingRequest request) {
-        List<Long> orderIds = request.getOrderIds();
+        List<String> orderIds = request.getOrderIds();
         List<Orders> orders = ordersService.getOrders(orderIds);
-        for (Orders order : orders) {
+        orders.forEach(order -> {
             order.setState(State.valueOf("TRANSPORT"));
-        }
+            order.setShippingTime(LocalDateTime.now());
+        });
         ordersService.saveBatch(orders);
+        tableService.toFifteenDaysQueue(orderIds);
 
         return SaResult.ok("发货成功！");
     }

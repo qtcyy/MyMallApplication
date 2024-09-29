@@ -15,15 +15,15 @@ import java.util.List;
  */
 public interface IProductCateService extends IService<ProductCate> {
 
-    boolean hasGroup(Long cateId, Long productId);
+    boolean hasGroup(String cateId, String productId);
 
-    boolean saveGroup(Long cateId, Long productId);
+    boolean saveGroup(String cateId, String productId);
 
-    boolean deleteByCate(Long cateId);
+    boolean deleteByCate(String cateId);
 
-    boolean deleteGroup(Long cateId, Long productId);
+    boolean deleteGroup(String cateId, String productId);
 
-    List<Long> getProductIds(List<Long> cateIds);
+    List<String> getProductIds(List<String> cateIds);
 
-    List<ProductCate> getProducts(List<Long> ids);
+    List<ProductCate> getProducts(List<String> ids);
 }

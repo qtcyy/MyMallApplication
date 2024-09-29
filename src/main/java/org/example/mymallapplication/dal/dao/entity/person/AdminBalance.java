@@ -1,4 +1,4 @@
-package org.example.mymallapplication.dal.dao.entity.product;
+package org.example.mymallapplication.dal.dao.entity.person;
 
 import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author qtcyy
- * @since 2024-09-23
+ * @since 2024-09-28
  */
-@TableName("admin_order")
-@Schema(name = "AdminOrder")
-public class AdminOrder implements Serializable {
+@TableName("admin_balance")
+@Schema(name = "AdminBalance对象", description = "")
+public class AdminBalance implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,7 +25,7 @@ public class AdminOrder implements Serializable {
 
     private String adminId;
 
-    private String orderId;
+    private Double balance;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
@@ -52,12 +52,12 @@ public class AdminOrder implements Serializable {
         this.adminId = adminId;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public Double getBalance() {
+        return balance;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setBalance(Double balance) {
+        this.balance = balance;
     }
 
     public LocalDateTime getCreateTime() {
@@ -86,10 +86,10 @@ public class AdminOrder implements Serializable {
 
     @Override
     public String toString() {
-        return "AdminOrder{" +
+        return "AdminBalance{" +
                 "id = " + id +
                 ", adminId = " + adminId +
-                ", orderId = " + orderId +
+                ", balance = " + balance +
                 ", createTime = " + createTime +
                 ", updateTime = " + updateTime +
                 ", deleted = " + deleted +

@@ -5,6 +5,7 @@ import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.service.UserService;
 import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
+import org.example.mymallapplication.dal.vo.request.ConfirmOrderRequest;
 import org.example.mymallapplication.dal.vo.request.UserLoginRequest;
 import org.example.mymallapplication.dal.vo.request.UserRegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,26 @@ public class UserController {
     }
 
     @SaCheckLogin
+    @RequestMapping("/balance/recharge/{money}")
+    public SaResult rechargeBalance(@PathVariable double money) {
+        return userService.rechargeBalance(money);
+    }
+
+    @SaCheckLogin
+    @RequestMapping("/balance/withdraw/{money}")
+    public SaResult withdrawBalance(@PathVariable double money) {
+        return userService.withdrawBalance(money);
+    }
+
+    @SaCheckLogin
     @PostMapping("/info/address")
     public SaResult setAddress(@RequestParam String address) {
         return userService.setAddress(address);
+    }
+
+    @SaCheckLogin
+    @RequestMapping("/order/confirm")
+    public SaResult confirmOrder(@RequestBody ConfirmOrderRequest request) {
+        return userService.confirmOrder(request);
     }
 }

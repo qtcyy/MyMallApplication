@@ -16,14 +16,14 @@ public class StpInterfaceImpl implements StpInterface {
 
     @Override
     public List<String> getPermissionList(Object o, String s) {
-        Long userId = Long.parseLong((String) o);
+        String userId = (String) o;
 
         return dbService.getPermissions(userId);
     }
 
     @Override
     public List<String> getRoleList(Object o, String s) {
-        Long userId = Long.parseLong((String) o);
+        String userId = (String) o;
 
         return dbService.getRoles(userId);
     }

@@ -8,6 +8,7 @@ import org.example.mymallapplication.dal.service.DBService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,8 +30,11 @@ public class DBServiceImpl implements DBService {
      * @return 角色字符串列表
      */
     @Override
-    public List<String> getRoles(Long userId) {
-        List<Long> roleIds = userRoleService.getRoleIds(userId);
+    public List<String> getRoles(String userId) {
+        List<String> roleIds = userRoleService.getRoleIds(userId);
+        if (roleIds.isEmpty()) {
+            return Collections.emptyList();
+        }
         return rolesService.getRoles(roleIds);
     }
 
@@ -41,9 +45,12 @@ public class DBServiceImpl implements DBService {
      * @return 权限字符串列表
      */
     @Override
-    public List<String> getPermissions(Long userId) {
-        List<Long> roleIds = userRoleService.getRoleIds(userId);
-        List<Long> permissionIds = rolePermissionService.getPermissionIds(roleIds);
+    public List<String> getPermissions(String userId) {
+        List<String> roleIds = userRoleService.getRoleIds(userId);
+        if (roleIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> permissionIds = rolePermissionService.getPermissionIds(roleIds);
 
         return permissionsService.getPermissions(permissionIds);
     }

@@ -6,5 +6,5 @@ import java.util.List;
 
 @Data
 public class ShippingRequest {
-    List<Long> orderIds;
+    List<String> orderIds;
 }

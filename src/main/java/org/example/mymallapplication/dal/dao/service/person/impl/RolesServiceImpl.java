@@ -28,7 +28,7 @@ public class RolesServiceImpl extends ServiceImpl<RolesMapper, Roles> implements
      * @return 角色字符串列表
      */
     @Override
-    public List<String> getRoles(List<Long> roleIds) {
+    public List<String> getRoles(List<String> roleIds) {
         LambdaQueryWrapper<Roles> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Roles::getId, roleIds).select(Roles::getRole);
 

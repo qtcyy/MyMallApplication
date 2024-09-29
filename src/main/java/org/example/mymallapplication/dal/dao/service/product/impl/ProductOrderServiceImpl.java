@@ -25,7 +25,7 @@ public class ProductOrderServiceImpl extends ServiceImpl<ProductOrderMapper, Pro
      * @return 产品ID
      */
     @Override
-    public Long getProductId(Long orderId) {
+    public String getProductId(String orderId) {
         LambdaQueryWrapper<ProductOrder> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProductOrder::getOrderId, orderId);
         return this.getOne(queryWrapper).getProductId();

@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class BuyProductRequest {
-    private Long productId;
+    private String productId;
     private int number;
     private String remark;
 }

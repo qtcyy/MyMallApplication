@@ -14,5 +14,5 @@ import java.util.List;
  * @since 2024-09-18
  */
 public interface IRolesService extends IService<Roles> {
-    List<String> getRoles(List<Long> roleIds);
+    List<String> getRoles(List<String> roleIds);
 }

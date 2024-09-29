@@ -4,6 +4,8 @@ import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.vo.request.BuyProductRequest;
 import org.example.mymallapplication.dal.vo.request.OrderCancelRequest;
 
+import java.util.List;
+
 public interface TableService {
     SaResult getProduct(String name);
 
@@ -12,4 +14,6 @@ public interface TableService {
     SaResult orderCancel(OrderCancelRequest request);
 
     SaResult getMyOrder();
+
+    void toFifteenDaysQueue(List<String> orderIds);
 }

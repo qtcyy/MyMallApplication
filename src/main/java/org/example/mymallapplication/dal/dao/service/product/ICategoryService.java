@@ -15,15 +15,13 @@ import java.util.List;
  */
 public interface ICategoryService extends IService<Category> {
 
-    boolean hasCate(String name);
-
-    boolean hasCate(Long id);
+    boolean hasCate(String str);
 
     boolean saveCate(Category category);
 
-    boolean deleteCate(Long id);
+    boolean deleteCate(String id);
 
     List<Category> getCategories(String name);
 
-    boolean updateCategory(Long id, Category category);
+    boolean updateCategory(String id, Category category);
 }

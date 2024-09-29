@@ -29,7 +29,7 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
      * @return 是否存在
      */
     @Override
-    public boolean hasGroup(Long cateId, Long productId) {
+    public boolean hasGroup(String cateId, String productId) {
         LambdaQueryWrapper<ProductCate> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProductCate::getCategoryId, cateId)
                 .eq(ProductCate::getProductId, productId);
@@ -45,7 +45,7 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
      * @return 保存状态
      */
     @Override
-    public boolean saveGroup(Long cateId, Long productId) {
+    public boolean saveGroup(String cateId, String productId) {
         ProductCate productCate = new ProductCate();
         productCate.setCategoryId(cateId);
         productCate.setProductId(productId);
@@ -59,7 +59,7 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
      * @return 删除状态
      */
     @Override
-    public boolean deleteByCate(Long cateId) {
+    public boolean deleteByCate(String cateId) {
         LambdaQueryWrapper<ProductCate> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProductCate::getCategoryId, cateId);
         return this.remove(queryWrapper);
@@ -73,7 +73,7 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
      * @return 是否删除成功
      */
     @Override
-    public boolean deleteGroup(Long cateId, Long productId) {
+    public boolean deleteGroup(String cateId, String productId) {
         LambdaQueryWrapper<ProductCate> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProductCate::getCategoryId, cateId)
                 .eq(ProductCate::getProductId, productId);
@@ -88,7 +88,7 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
      * @return 产品ID列表
      */
     @Override
-    public List<Long> getProductIds(List<Long> cateIds) {
+    public List<String> getProductIds(List<String> cateIds) {
         LambdaQueryWrapper<ProductCate> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(ProductCate::getCategoryId, cateIds);
 
@@ -103,7 +103,7 @@ public class ProductCateServiceImpl extends ServiceImpl<ProductCateMapper, Produ
      * @return 映射表实体列表
      */
     @Override
-    public List<ProductCate> getProducts(List<Long> ids) {
+    public List<ProductCate> getProducts(List<String> ids) {
         LambdaQueryWrapper<ProductCate> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(ProductCate::getProductId, ids);
 

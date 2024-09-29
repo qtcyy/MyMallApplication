@@ -29,4 +29,6 @@ public interface RedisService {
     void saveAdminToRedis(String key, Users users);
 
     Users getAdmin(String key);
+
+    void delayQueue(String key, String id, long delayTime);
 }

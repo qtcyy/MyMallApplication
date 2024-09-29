@@ -24,7 +24,7 @@ public class GroupController {
 
     @SaCheckPermission("delete")
     @RequestMapping("/delete/{id}")
-    public SaResult deleteCategory(@PathVariable Long id) {
+    public SaResult deleteCategory(@PathVariable String id) {
         return categoryService.deleteCate(id);
     }
 
@@ -36,13 +36,13 @@ public class GroupController {
 
     @SaCheckPermission("read")
     @RequestMapping("/get/{id}")
-    public SaResult getCategory(@PathVariable Long id) {
-        return categoryService.getCate(id);
+    public SaResult getCategoryById(@PathVariable String id) {
+        return categoryService.getCateById(id);
     }
 
     @SaCheckPermission("change")
     @RequestMapping("/change/{id}")
-    public SaResult changeCate(@PathVariable Long id, @RequestBody CategoryRequest request) {
+    public SaResult changeCate(@PathVariable String id, @RequestBody CategoryRequest request) {
         return categoryService.changeCate(id, request);
     }
 

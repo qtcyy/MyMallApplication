@@ -11,7 +11,7 @@ public interface ProductService {
 
     SaResult changeProduct(Products newProduct);
 
-    SaResult deleteProduct(Long id);
+    SaResult deleteProduct(String id);
 
     SaResult shipProduct(ShippingRequest request);
 }

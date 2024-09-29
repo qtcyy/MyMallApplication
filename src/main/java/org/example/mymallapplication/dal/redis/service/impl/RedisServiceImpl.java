@@ -159,4 +159,16 @@ public class RedisServiceImpl implements RedisService {
         String jsonStr = (String) redisTemplate.opsForValue().get(key);
         return JSONUtil.toBean(jsonStr, Users.class);
     }
+
+    /**
+     * <p>插入到延时队列中</p>
+     *
+     * @param key       键
+     * @param id        ID
+     * @param delayTime 延迟时间
+     */
+    @Override
+    public void delayQueue(String key, String id, long delayTime) {
+        redisTemplate.opsForZSet().add(key, id, delayTime);
+    }
 }

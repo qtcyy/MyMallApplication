@@ -1,6 +1,9 @@
-package org.example.mymallapplication.dal.dao.entity.product;
+package org.example.mymallapplication.dal.dao.entity.person;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.io.Serializable;
@@ -12,29 +15,25 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author qtcyy
- * @since 2024-09-23
+ * @since 2024-09-25
  */
-@TableName("admin_order")
-@Schema(name = "AdminOrder")
-public class AdminOrder implements Serializable {
+@Schema(name = "Balance对象", description = "")
+public class Balance implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.ASSIGN_UUID)
     private String id;
 
-    private String adminId;
+    private String userId;
 
-    private String orderId;
+    private Double balance;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
-
-    @TableLogic
-    private Boolean deleted;
 
     public String getId() {
         return id;
@@ -44,20 +43,20 @@ public class AdminOrder implements Serializable {
         this.id = id;
     }
 
-    public String getAdminId() {
-        return adminId;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setAdminId(String adminId) {
-        this.adminId = adminId;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public Double getBalance() {
+        return balance;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setBalance(Double balance) {
+        this.balance = balance;
     }
 
     public LocalDateTime getCreateTime() {
@@ -76,23 +75,14 @@ public class AdminOrder implements Serializable {
         this.updateTime = updateTime;
     }
 
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
-
     @Override
     public String toString() {
-        return "AdminOrder{" +
+        return "Balance{" +
                 "id = " + id +
-                ", adminId = " + adminId +
-                ", orderId = " + orderId +
+                ", userId = " + userId +
+                ", balance = " + balance +
                 ", createTime = " + createTime +
                 ", updateTime = " + updateTime +
-                ", deleted = " + deleted +
                 "}";
     }
 }

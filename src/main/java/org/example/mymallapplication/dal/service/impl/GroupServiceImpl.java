@@ -58,7 +58,7 @@ public class GroupServiceImpl implements GroupService {
      * @return 删除状态
      */
     @Override
-    public SaResult deleteCate(Long id) {
+    public SaResult deleteCate(String id) {
         if (!categoryService.hasCate(id)) {
             return SaResult.error("不存在类别");
         }
@@ -83,9 +83,9 @@ public class GroupServiceImpl implements GroupService {
             return SaResult.error("未找到");
         }
 
-        List<Long> cateIds = categories.stream().map(Category::getId).toList();
+        List<String> cateIds = categories.stream().map(Category::getId).toList();
 
-        List<Long> productIds = productCateService.getProductIds(cateIds);
+        List<String> productIds = productCateService.getProductIds(cateIds);
         if (productIds.isEmpty()) {
             return SaResult.ok("获取成功！无相关产品").setData(categories).setCode(520);
         }
@@ -102,7 +102,7 @@ public class GroupServiceImpl implements GroupService {
      * @return 类别
      */
     @Override
-    public SaResult getCate(Long id) {
+    public SaResult getCateById(String id) {
         if (!categoryService.hasCate(id)) {
             return SaResult.error("不存在！");
         }
@@ -119,7 +119,7 @@ public class GroupServiceImpl implements GroupService {
      * @return 更改状态
      */
     @Override
-    public SaResult changeCate(Long id, CategoryRequest request) {
+    public SaResult changeCate(String id, CategoryRequest request) {
         if (!categoryService.hasCate(id)) {
             return SaResult.error("无此类别！");
         }
@@ -151,10 +151,10 @@ public class GroupServiceImpl implements GroupService {
             return SaResult.error("无此类别！");
         }
 
-        List<Long> productIds = request.getProductIds();
-        List<Long> existingIds = productsService.getExistingProductIds(productIds);
+        List<String> productIds = request.getProductIds();
+        List<String> existingIds = productsService.getExistingProductIds(productIds);
 
-        List<Long> errList = new ArrayList<>(productIds);
+        List<String> errList = new ArrayList<>(productIds);
         errList.removeAll(existingIds);
 
         List<ProductCate> entities = existingIds.stream()
@@ -201,10 +201,10 @@ public class GroupServiceImpl implements GroupService {
             productCateService.deleteGroup(request.getCateId(), id);
         }
         */
-        List<Long> productIds = request.getProductIds();
-        List<Long> existingIds = productsService.getExistingProductIds(productIds);
+        List<String> productIds = request.getProductIds();
+        List<String> existingIds = productsService.getExistingProductIds(productIds);
 
-        List<Long> errList = new ArrayList<>(productIds);
+        List<String> errList = new ArrayList<>(productIds);
         errList.removeAll(existingIds);
         List<ProductCate> delProductCate = productCateService.getProducts(existingIds);
 

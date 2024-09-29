@@ -15,11 +15,9 @@ public interface IFrontendUsersService extends IService<FrontendUsers> {
 
     boolean hasUser(String username);
 
-    Long getUserIdByName(String username);
+    String getUserIdByName(String username);
 
-    FrontendUsers getFrontendUsers(String username);
+    FrontendUsers getFrontendUsers(String str);
 
-    FrontendUsers getFrontendUsers(Long id);
-
-    boolean updateAddress(Long id, String address);
+    boolean updateAddress(String id, String address);
 }

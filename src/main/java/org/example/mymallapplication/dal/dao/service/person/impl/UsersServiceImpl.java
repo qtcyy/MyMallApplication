@@ -24,23 +24,10 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
      * @return 用户ID
      */
     @Override
-    public Long getIdByName(String username) {
+    public String getIdByName(String username) {
         LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Users::getUsername, username);
         return this.getOne(queryWrapper).getId();
-    }
-
-    /**
-     * <p>判断是否存在用户名</p>
-     *
-     * @param username 用户名
-     * @return 是否存在
-     */
-    @Override
-    public boolean hasUser(String username) {
-        LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Users::getUsername, username);
-        return this.count(queryWrapper) > 0;
     }
 
     /**
@@ -50,9 +37,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
      * @return 是否存在
      */
     @Override
-    public boolean hasUser(Long id) {
+    public boolean hasUser(String str) {
         LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Users::getId, id);
+        queryWrapper.eq(Users::getId, str).or().eq(Users::getUsername, str);
         return this.count(queryWrapper) > 0;
     }
 

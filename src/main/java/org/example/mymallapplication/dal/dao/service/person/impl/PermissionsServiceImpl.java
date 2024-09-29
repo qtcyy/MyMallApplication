@@ -27,7 +27,7 @@ public class PermissionsServiceImpl extends ServiceImpl<PermissionsMapper, Permi
      * @return 权限字符串列表
      */
     @Override
-    public List<String> getPermissions(List<Long> ids) {
+    public List<String> getPermissions(List<String> ids) {
         LambdaQueryWrapper<Permissions> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Permissions::getId, ids).select(Permissions::getPermission);
         return this.baseMapper.selectObjs(queryWrapper).stream()
