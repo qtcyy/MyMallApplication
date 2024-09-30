@@ -4,12 +4,19 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.config.RabbitMQConfig;
+import org.example.mymallapplication.dal.dao.entity.commit.ProductReviews;
+import org.example.mymallapplication.dal.dao.entity.commit.ReviewLikes;
 import org.example.mymallapplication.dal.dao.entity.person.Balance;
 import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
 import org.example.mymallapplication.dal.dao.entity.product.Orders;
+import org.example.mymallapplication.dal.dao.service.commit.IProductReviewsService;
+import org.example.mymallapplication.dal.dao.service.commit.IReviewLikesService;
 import org.example.mymallapplication.dal.dao.service.person.IBalanceService;
 import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersService;
 import org.example.mymallapplication.dal.dao.service.person.IUsersService;
@@ -17,18 +24,21 @@ import org.example.mymallapplication.dal.dao.service.product.IOrdersService;
 import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.redis.service.RedisService;
 import org.example.mymallapplication.dal.service.UserService;
-import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
-import org.example.mymallapplication.dal.vo.request.ConfirmOrderRequest;
-import org.example.mymallapplication.dal.vo.request.UserLoginRequest;
-import org.example.mymallapplication.dal.vo.request.UserRegisterRequest;
+import org.example.mymallapplication.dal.vo.request.*;
 import org.example.mymallapplication.dal.vo.response.UserLoginResponse;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author chengyiyang
+ */
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
@@ -42,6 +52,10 @@ public class UserServiceImpl implements UserService {
     private IOrdersService ordersService;
     @Autowired
     private IBalanceService balanceService;
+    @Autowired
+    private IProductReviewsService productReviewsService;
+    @Autowired
+    private IReviewLikesService reviewLikesService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -244,4 +258,125 @@ public class UserServiceImpl implements UserService {
 
         return SaResult.ok("确认收货成功！");
     }
+
+    /**
+     * 写评论
+     *
+     * @param request 评论请求
+     * @return 评论状态
+     */
+    @Override
+    public SaResult writeCommit(WriteCommitRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        ProductReviews reviews = new ProductReviews();
+        BeanUtil.copyProperties(request, reviews);
+        reviews.setUserId(userId);
+        try {
+            productReviewsService.save(reviews);
+        } catch (Exception e) {
+            log.error("评论保存失败: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("评论保存失败: " + e.toString());
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
+     * 回复评论
+     *
+     * @param request 请求
+     * @return 状态
+     */
+    @Override
+    public SaResult replyCommit(CommitReplyRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        ProductReviews reviews = new ProductReviews();
+        BeanUtil.copyProperties(request, reviews);
+
+        reviews.setUserId(userId);
+        ProductReviews parentReviews = productReviewsService.getById(reviews.getParentId());
+        if (parentReviews != null) {
+            reviews.setParentId(parentReviews.getParentId());
+        }
+
+        try {
+            productReviewsService.save(reviews);
+        } catch (Exception e) {
+            BaseContext.clear();
+            return SaResult.error("数据库错误" + e.toString());
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
+     * 点赞评论
+     *
+     * @param id 评论ID
+     * @return 状态
+     */
+    @Override
+    public SaResult likeCommit(String id) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        ReviewLikes reviewLikes = new ReviewLikes();
+        reviewLikes.setUserId(userId);
+        reviewLikes.setReviewId(id);
+
+        try {
+            reviewLikesService.save(reviewLikes);
+            ProductReviews reviews = productReviewsService.getReview(id);
+            reviews.setLikeCount(reviews.getLikeCount() + 1);
+            productReviewsService.save(reviews);
+        } catch (Exception e) {
+            log.error("点赞保存错误: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("点赞保存错误" + e.toString());
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
+     * 获取评论
+     *
+     * @param productId 商品ID
+     * @return 评论
+     */
+    @Override
+    public SaResult getCommit(String productId, int page, int size) {
+        IPage<ProductReviews> mainReviews = productReviewsService.getMainReviews(productId, page, size);
+
+        List<String> mainReviewIds = mainReviews.getRecords().stream()
+                .map(ProductReviews::getId).toList();
+        Map<String, List<ProductReviews>> replyMap = productReviewsService.getRepliesByParentIds(mainReviewIds);
+
+        List<NewReviews> newReviews = new ArrayList<>();
+        for (ProductReviews review : mainReviews.getRecords()) {
+            NewReviews newReview = new NewReviews();
+            newReview.setReviews(replyMap.getOrDefault(review.getParentId(), new ArrayList<>()));
+            newReviews.add(newReview);
+        }
+
+        return SaResult.ok("success")
+                .setData(newReviews)
+                .set("currentPage", mainReviews.getCurrent())
+                .set("totalPages", mainReviews.getPages())
+                .set("totalRecords", mainReviews.getTotal());
+    }
+}
+
+@Getter
+@Setter
+class NewReviews extends ProductReviews {
+    private List<ProductReviews> reviews = new ArrayList<>();
 }

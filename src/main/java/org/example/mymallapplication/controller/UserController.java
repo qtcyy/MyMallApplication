@@ -4,11 +4,9 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import jakarta.validation.Valid;
 import org.example.mymallapplication.dal.service.UserService;
-import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
-import org.example.mymallapplication.dal.vo.request.ConfirmOrderRequest;
-import org.example.mymallapplication.dal.vo.request.UserLoginRequest;
-import org.example.mymallapplication.dal.vo.request.UserRegisterRequest;
+import org.example.mymallapplication.dal.vo.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -76,5 +74,33 @@ public class UserController {
     @PostMapping("/order/confirm")
     public SaResult confirmOrder(@RequestBody ConfirmOrderRequest request) {
         return userService.confirmOrder(request);
+    }
+
+    @SaCheckLogin
+    @PostMapping("/product/commit/")
+    public SaResult writeCommit(@Valid @RequestBody WriteCommitRequest request) {
+        return userService.writeCommit(request);
+    }
+
+    @SaCheckLogin
+    @PostMapping("/product/commit/reply")
+    public SaResult replyCommit(@Valid @RequestBody CommitReplyRequest request) {
+        return userService.replyCommit(request);
+    }
+
+    @SaCheckLogin
+    @GetMapping("/product/commit/like/{id}")
+    public SaResult likeCommit(@PathVariable String id) {
+        return userService.likeCommit(id);
+    }
+
+    @SaIgnore
+    @GetMapping("/product/commit/show/{productId}")
+    public SaResult commit(
+            @PathVariable String productId,
+            @RequestParam int page,
+            @RequestParam int size
+    ) {
+        return userService.getCommit(productId, page, size);
     }
 }
