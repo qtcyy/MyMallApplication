@@ -4,6 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.dao.entity.product.Orders;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
@@ -14,12 +16,16 @@ import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.service.ProductService;
 import org.example.mymallapplication.dal.service.TableService;
 import org.example.mymallapplication.dal.vo.request.ShippingRequest;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 @Service
 public class ProductServiceImpl implements ProductService {
     @Autowired
@@ -65,13 +71,32 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
+     * 分页查询商品
+     *
+     * @param page 页面
+     * @param size 页面大小
+     * @return 搜索信息
+     */
+    @Override
+    public SaResult getProductsPage(String name, int page, int size) {
+        Page<Products> productsPage = new Page<>(page, size);
+        IPage<Products> mainPages = productsService.getProductPage(productsPage, name);
+
+        return SaResult.ok()
+                .setData(mainPages.getRecords())
+                .set("total", mainPages.getTotal())
+                .set("page", page)
+                .set("size", size);
+    }
+
+    /**
      * <p>更新产品信息</p>
      *
      * @param newProduct 接收到的产品信息
      * @return 状态
      */
     @Override
-    public SaResult changeProduct(Products newProduct) {
+    public SaResult changeProduct(@NotNull Products newProduct) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         Products product = productsService.getProducts(newProduct.getId());
 
@@ -110,7 +135,7 @@ public class ProductServiceImpl implements ProductService {
      * @return 发货状态
      */
     @Override
-    public SaResult shipProduct(ShippingRequest request) {
+    public SaResult shipProduct(@NotNull ShippingRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         List<String> orderIds = request.getOrderIds();
         List<Orders> orders = ordersService.getOrders(orderIds);

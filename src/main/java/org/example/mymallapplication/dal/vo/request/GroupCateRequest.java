@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 @Data
 public class GroupCateRequest {
     @NotBlank(message = "类别ID不能为空")

@@ -1,9 +1,12 @@
 package org.example.mymallapplication.dal.dao.service.product;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -25,7 +28,11 @@ public interface IProductsService extends IService<Products> {
 
     List<Products> getProducts(List<String> ids);
 
+    Map<String, Products> getProductsIdMap(List<String> ids);
+
     List<Products> getProductsLike(String name);
+
+    IPage<Products> getProductPage(Page<Products> page, String name);
 
     boolean changeProduct(Products product);
 

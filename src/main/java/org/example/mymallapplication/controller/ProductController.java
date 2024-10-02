@@ -11,6 +11,9 @@ import org.example.mymallapplication.dal.vo.request.ShippingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @author chengyiyang
+ */
 @RestController
 @RequestMapping("/product")
 public class ProductController {
@@ -33,6 +36,12 @@ public class ProductController {
     @GetMapping("/info/{name}")
     public SaResult getProducts(@PathVariable String name) {
         return productService.getProductsLike(name);
+    }
+
+    @SaIgnore
+    @GetMapping("/get/onPage")
+    public SaResult getOnPage(@RequestParam String name, @RequestParam int page, @RequestParam int size) {
+        return productService.getProductsPage(name, page, size);
     }
 
     @SaCheckPermission("change")

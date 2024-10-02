@@ -4,6 +4,10 @@ package org.example.mymallapplication.dal.enums;
 import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.Getter;
 
+/**
+ * @author chengyiyang
+ */
+
 public enum Gender implements IEnum<Integer> {
     MALE(1, "男"),
     FEMALE(2, "女");

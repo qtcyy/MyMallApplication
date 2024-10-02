@@ -13,6 +13,7 @@ import org.example.mymallapplication.dal.dao.service.person.IBalanceService;
 import org.example.mymallapplication.dal.dao.service.product.*;
 import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.service.ScheduledService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,6 +24,9 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author chengyiyang
+ */
 @Slf4j
 @Service
 public class ScheduledServiceImpl implements ScheduledService {
@@ -136,9 +140,9 @@ public class ScheduledServiceImpl implements ScheduledService {
     @Async
     public void processOrderConfirm(Orders order, @Header(value = "handle-confirm", required = false) String headerKey) {
         rateLimiter.acquire();
-        if (headerKey.equals("handle-confirm")) {
+        if ("handle-confirm".equals(headerKey)) {
             log.info("handle-confirm order: {}", order.getId());
-        } else if (headerKey.equals("x-delay")) {
+        } else if ("x-delay".equals(headerKey)) {
             log.info("auto-confirm order: {}", order.getId());
         }
 
@@ -165,7 +169,7 @@ public class ScheduledServiceImpl implements ScheduledService {
     @Override
     @Async
     @RabbitListener(queues = RabbitMQConfig.DELAYED_CANCEL_QUEUE_NAME)
-    public void processOrderDelayedCancel(Orders order) {
+    public void processOrderDelayedCancel(@NotNull Orders order) {
         rateLimiter.acquire();
 
         Orders newOrder = ordersService.getById(order.getId());

@@ -7,8 +7,8 @@ spring:
         master:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://172.30.52.78:3306/my_mail_db
-          username: ttt
+          url: jdbc:mysql://localhost:3306/my_mail_db2
+          username: root
           password: 12345678
 
       hikari:

@@ -1,6 +1,8 @@
 package org.example.mymallapplication.dal.dao.service.product.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
@@ -9,6 +11,7 @@ import org.example.mymallapplication.dal.dao.service.product.IProductsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +68,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     /**
      * <p>根据商品名获取商品信息</p>
      *
-     * @param name 商品名
+     * @param str 商品名
      * @return 商品信息
      */
     @Override
@@ -91,6 +94,20 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     }
 
     /**
+     * 根据商品ID列表获取map对
+     *
+     * @param ids 商品ID列表
+     * @return map对
+     */
+    @Override
+    public Map<String, Products> getProductsIdMap(List<String> ids) {
+        LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Products::getId, ids);
+        List<Products> products = this.list(queryWrapper);
+        return products.stream().collect(Collectors.toMap(Products::getId, p -> p));
+    }
+
+    /**
      * <p>近似查询商品</p>
      *
      * @param name 商品名
@@ -103,6 +120,21 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
                 .or()
                 .like(Products::getDescription, name);
         return this.list(queryWrapper);
+    }
+
+    /**
+     * 分页查询商品
+     *
+     * @param page 页面信息
+     * @param name 商品名称
+     * @return 分页信息
+     */
+    @Override
+    public IPage<Products> getProductPage(Page<Products> page, String name) {
+        LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(Products::getName, name)
+                .or().like(Products::getDescription, name);
+        return this.page(page, queryWrapper);
     }
 
     /**

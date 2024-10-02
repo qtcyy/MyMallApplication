@@ -4,6 +4,9 @@ import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.vo.request.CategoryRequest;
 import org.example.mymallapplication.dal.vo.request.GroupCateRequest;
 
+/**
+ * @author chengyiyang
+ */
 public interface GroupService {
 
     SaResult saveCate(CategoryRequest request);

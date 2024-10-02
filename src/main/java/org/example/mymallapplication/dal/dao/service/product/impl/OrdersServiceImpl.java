@@ -63,6 +63,21 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     }
 
     /**
+     * 根据ID和状态获取订单列表
+     *
+     * @param orderIds 订单ID列表
+     * @param state    状态
+     * @return 订单列表
+     */
+    @Override
+    public List<Orders> getOrdersWithState(List<String> orderIds, State state) {
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Orders::getId, orderIds).eq(Orders::getState, state);
+
+        return this.list(queryWrapper);
+    }
+
+    /**
      * <p>根据状态获取订单</p>
      *
      * @param state 状态

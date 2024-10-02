@@ -6,6 +6,9 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.scheduling.annotation.Async;
 
+/**
+ * @author chengyiyang
+ */
 public interface ScheduledService {
 
     void processDelayedOrders();

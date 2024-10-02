@@ -14,12 +14,16 @@ import org.example.mymallapplication.dal.service.GroupService;
 import org.example.mymallapplication.dal.vo.request.CategoryRequest;
 import org.example.mymallapplication.dal.vo.request.GroupCateRequest;
 import org.example.mymallapplication.dal.vo.response.GetCateResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 @Service
 public class GroupServiceImpl implements GroupService {
     @Autowired
@@ -36,7 +40,7 @@ public class GroupServiceImpl implements GroupService {
      * @return 保存状态
      */
     @Override
-    public SaResult saveCate(CategoryRequest request) {
+    public SaResult saveCate(@NotNull CategoryRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (categoryService.hasCate(request.getName())) {
             BaseContext.clear();
@@ -151,7 +155,7 @@ public class GroupServiceImpl implements GroupService {
      * @return 归类状态
      */
     @Override
-    public SaResult groupCate(GroupCateRequest request) {
+    public SaResult groupCate(@NotNull GroupCateRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!categoryService.hasCate(request.getCateId())) {
             BaseContext.clear();
@@ -191,7 +195,7 @@ public class GroupServiceImpl implements GroupService {
      * @return 删除状态
      */
     @Override
-    public SaResult deleteGroup(GroupCateRequest request) {
+    public SaResult deleteGroup(@NotNull GroupCateRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!categoryService.hasCate(request.getCateId())) {
             BaseContext.clear();

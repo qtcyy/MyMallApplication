@@ -3,6 +3,10 @@ package org.example.mymallapplication.dal.enums;
 import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.Getter;
 
+/**
+ * @author chengyiyang
+ */
+
 public enum State implements IEnum<Integer> {
     UNPAID(1, "创建成功，未付款"),
     PAID(2, "已付款，待发货"),

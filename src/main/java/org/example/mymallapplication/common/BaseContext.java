@@ -1,5 +1,8 @@
 package org.example.mymallapplication.common;
 
+/**
+ * @author chengyiyang
+ */
 public class BaseContext {
 
     private static final ThreadLocal<String> threadLocal = new ThreadLocal<>();

@@ -6,10 +6,15 @@ import org.example.mymallapplication.dal.vo.request.OrderCancelRequest;
 
 import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 public interface TableService {
     SaResult getProduct(String name);
 
     SaResult buyProduct(BuyProductRequest request);
+
+    SaResult buyProductByIds(List<BuyProductRequest> requests);
 
     SaResult orderCancel(OrderCancelRequest request);
 

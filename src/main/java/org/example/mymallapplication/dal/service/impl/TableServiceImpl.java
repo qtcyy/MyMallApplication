@@ -19,6 +19,7 @@ import org.example.mymallapplication.dal.redis.service.RedisService;
 import org.example.mymallapplication.dal.service.TableService;
 import org.example.mymallapplication.dal.vo.request.BuyProductRequest;
 import org.example.mymallapplication.dal.vo.request.OrderCancelRequest;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,11 +27,12 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * @author chengyiyang
+ */
 @Slf4j
 @Service
 public class TableServiceImpl implements TableService {
@@ -80,7 +82,7 @@ public class TableServiceImpl implements TableService {
      * @return 购买状态
      */
     @Override
-    public SaResult buyProduct(BuyProductRequest request) {
+    public SaResult buyProduct(@NotNull BuyProductRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         if (!productsService.hasProduct(request.getProductId())) {
             BaseContext.clear();
@@ -188,13 +190,85 @@ public class TableServiceImpl implements TableService {
     }
 
     /**
+     * 下单商品列表
+     *
+     * @param requests 商品列表
+     * @return 购买状态
+     */
+    @Override
+    public SaResult buyProductByIds(@NotNull List<BuyProductRequest> requests) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        //<productId,request>
+        Map<String, BuyProductRequest> buyMap = requests.stream()
+                .collect(Collectors.toMap(BuyProductRequest::getProductId, p -> p));
+        List<String> productIds = requests.stream().map(BuyProductRequest::getProductId).toList();
+        List<String> errList = new ArrayList<>(productIds);
+        try {
+            List<String> existIds = productsService.getExistingProductIds(productIds);
+            errList.removeAll(existIds);
+            if (!errList.isEmpty()) {
+                throw new Exception("有商品不存在");
+            }
+
+            List<Products> products = productsService.getProducts(productIds);
+            Map<String, String> orderIds = new HashMap<>();
+            for (Products product : products) {
+                Orders order = new Orders();
+                order.setState(State.UNPAID);
+                order.setTime(LocalDateTime.now());
+                int number = buyMap.get(product.getId()).getNumber();
+                order.setNumber(number);
+                order.setPrice(product.getPrice() * number);
+                order.setRemark(buyMap.get(product.getId()).getRemark());
+                ordersService.save(order);
+                Thread.sleep(50);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.DELAYED_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY,
+                        order.getId(), message -> {
+                            message.getMessageProperties().getHeaders().putAll(new HashMap<>() {{
+                                put("x-delay", 5 * 60 * 1000);
+                            }});
+                            return message;
+                        }
+                );
+                orderIds.put(product.getId(), order.getId());
+            }
+            List<ProductOrder> productOrders = new ArrayList<>();
+            for (String productId : productIds) {
+                ProductOrder productOrder = new ProductOrder();
+                productOrder.setProductId(productId);
+                productOrder.setOrderId(orderIds.get(productId));
+                productOrders.add(productOrder);
+            }
+            productOrderService.saveBatch(productOrders);
+            List<UserOrder> userOrders = new ArrayList<>();
+            for (String orderId : orderIds.keySet()) {
+                UserOrder userOrder = new UserOrder();
+                userOrder.setOrderId(orderId);
+                userOrder.setUserId(userId);
+                userOrders.add(userOrder);
+            }
+            userOrderService.saveBatch(userOrders);
+
+        } catch (Exception e) {
+            log.error("查找商品失败: {}", e.getMessage());
+            BaseContext.clear();
+            return SaResult.error(e.getMessage()).setData(errList);
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
      * <p>取消订单服务</p>
      *
      * @param request 取消请求
      * @return 取消状态
      */
     @Override
-    public SaResult orderCancel(OrderCancelRequest request) {
+    public SaResult orderCancel(@NotNull OrderCancelRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         Orders order = ordersService.getById(request.getOrderId());
         order.setState(State.valueOf("CANCEL"));
@@ -234,7 +308,7 @@ public class TableServiceImpl implements TableService {
      */
     @Override
     @Async
-    public void toFifteenDaysQueue(List<String> orderIds) {
+    public void toFifteenDaysQueue(@NotNull List<String> orderIds) {
         long delay = 15 * 24 * 60 * 60 * 1000;
 //        long delay = 30 * 1000;
 
@@ -242,10 +316,11 @@ public class TableServiceImpl implements TableService {
             Map<String, Object> headers = new HashMap<>();
             headers.put("x-delay", delay);
 
-            rabbitTemplate.convertAndSend(RabbitMQConfig.DELAYED_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, orderId, message -> {
-                message.getMessageProperties().getHeaders().putAll(headers);
-                return message;
-            });
+            rabbitTemplate.convertAndSend(RabbitMQConfig.DELAYED_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, orderId,
+                    message -> {
+                        message.getMessageProperties().getHeaders().putAll(headers);
+                        return message;
+                    });
 
             log.info("Order " + orderId + " shipped. Auto-confirm in 15 days.");
         });

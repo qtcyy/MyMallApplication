@@ -5,13 +5,18 @@ import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.example.mymallapplication.dal.service.UserService;
 import org.example.mymallapplication.dal.vo.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -102,5 +107,35 @@ public class UserController {
             @RequestParam int size
     ) {
         return userService.getCommit(productId, page, size);
+    }
+
+    @SaCheckLogin
+    @PostMapping("/cart/add")
+    public SaResult addCart(@Valid @RequestBody AddCartRequest request) {
+        return userService.addToCart(request);
+    }
+
+    @SaCheckLogin
+    @GetMapping("/cart")
+    public SaResult getCart() {
+        return userService.getCart();
+    }
+
+    @SaCheckLogin
+    @GetMapping("/order/unpaid")
+    public SaResult getUnpaidOrder() {
+        return userService.getUnpaidOrder();
+    }
+
+    @SaCheckLogin
+    @GetMapping("/order/pay/{orderId}")
+    public SaResult payOrder(@NotBlank(message = "订单ID不能为空") @PathVariable String orderId) {
+        return userService.payOrder(orderId);
+    }
+
+    @SaCheckLogin
+    @PostMapping("/order/pay")
+    public SaResult payOrders(@NotBlank(message = "订单ID不能为空") @RequestBody List<String> orderIds) {
+        return userService.payOrders(orderIds);
     }
 }

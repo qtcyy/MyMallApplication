@@ -13,19 +13,26 @@ import org.example.mymallapplication.dal.config.RabbitMQConfig;
 import org.example.mymallapplication.dal.dao.entity.commit.ProductReviews;
 import org.example.mymallapplication.dal.dao.entity.commit.ReviewLikes;
 import org.example.mymallapplication.dal.dao.entity.person.Balance;
+import org.example.mymallapplication.dal.dao.entity.person.Cart;
 import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
 import org.example.mymallapplication.dal.dao.entity.product.Orders;
+import org.example.mymallapplication.dal.dao.entity.product.Products;
 import org.example.mymallapplication.dal.dao.service.commit.IProductReviewsService;
 import org.example.mymallapplication.dal.dao.service.commit.IReviewLikesService;
 import org.example.mymallapplication.dal.dao.service.person.IBalanceService;
+import org.example.mymallapplication.dal.dao.service.person.ICartService;
 import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersService;
 import org.example.mymallapplication.dal.dao.service.person.IUsersService;
 import org.example.mymallapplication.dal.dao.service.product.IOrdersService;
+import org.example.mymallapplication.dal.dao.service.product.IProductsService;
+import org.example.mymallapplication.dal.dao.service.product.IUserOrderService;
 import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.redis.service.RedisService;
 import org.example.mymallapplication.dal.service.UserService;
 import org.example.mymallapplication.dal.vo.request.*;
+import org.example.mymallapplication.dal.vo.response.GetCartResponse;
 import org.example.mymallapplication.dal.vo.response.UserLoginResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +63,12 @@ public class UserServiceImpl implements UserService {
     private IProductReviewsService productReviewsService;
     @Autowired
     private IReviewLikesService reviewLikesService;
+    @Autowired
+    private ICartService cartService;
+    @Autowired
+    private IProductsService productsService;
+    @Autowired
+    private IUserOrderService userOrderService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -67,7 +80,7 @@ public class UserServiceImpl implements UserService {
      * @return 登陆结果信息
      */
     @Override
-    public SaResult userLogin(UserLoginRequest request) {
+    public SaResult userLogin(@NotNull UserLoginRequest request) {
         if (!usersService.hasUser(request.getUsername())) {
             return SaResult.error("用户名或密码错误！");
         }
@@ -92,7 +105,7 @@ public class UserServiceImpl implements UserService {
      * @return 注册状态
      */
     @Override
-    public SaResult userRegister(UserRegisterRequest request) {
+    public SaResult userRegister(@NotNull UserRegisterRequest request) {
         if (usersService.hasUser(request.getUsername()) || adminService.hasUser(request.getUsername())) {
             return SaResult.error("用户名已存在！");
         }
@@ -234,7 +247,7 @@ public class UserServiceImpl implements UserService {
      * @return 确认状态
      */
     @Override
-    public SaResult confirmOrder(ConfirmOrderRequest request) {
+    public SaResult confirmOrder(@NotNull ConfirmOrderRequest request) {
         Orders order = ordersService.getById(request.getOrderId());
         if (order.getState().equals(State.END) || order.getState().equals(State.DELETED)) {
             return SaResult.error("不允许次操作");
@@ -372,6 +385,149 @@ public class UserServiceImpl implements UserService {
                 .set("currentPage", mainReviews.getCurrent())
                 .set("totalPages", mainReviews.getPages())
                 .set("totalRecords", mainReviews.getTotal());
+    }
+
+    /**
+     * 添加到购物车
+     *
+     * @param request 信息
+     * @return 添加信息
+     */
+    @Override
+    public SaResult addToCart(@org.jetbrains.annotations.NotNull AddCartRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        Cart cart = cartService.getCart(userId, request.getProductId());
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUserId(userId);
+            cart.setProductId(request.getProductId());
+            cart.setQuantity(request.getQuantity());
+            try {
+                cartService.save(cart);
+            } catch (Exception e) {
+                log.error("添加到数据库错误: {}", e.toString());
+                BaseContext.clear();
+                return SaResult.error("添加到数据库错误:" + e.toString());
+            }
+        } else {
+            cart.setQuantity(cart.getQuantity() + request.getQuantity());
+            try {
+                cartService.updateById(cart);
+            } catch (Exception e) {
+                log.error("更新到数据库错误: {}", e.toString());
+                BaseContext.clear();
+                return SaResult.error("更新到数据库错误:" + e.toString());
+            }
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
+     * 获取购物车信息
+     *
+     * @return 购物车信息
+     */
+    @Override
+    public SaResult getCart() {
+        String userId = StpUtil.getLoginIdAsString();
+        List<GetCartResponse> responses = new ArrayList<>();
+        List<Cart> userCart = cartService.getCart(userId);
+        List<String> productIds = userCart.stream().map(Cart::getProductId).toList();
+
+        //<商品ID, 商品>
+        Map<String, Products> productsMap = productsService.getProductsIdMap(productIds);
+        for (Cart cart : userCart) {
+            Products products = productsMap.getOrDefault(cart.getProductId(), new Products());
+            GetCartResponse getCartResponse = new GetCartResponse();
+            BeanUtil.copyProperties(products, getCartResponse);
+            getCartResponse.setQuantity(cart.getQuantity());
+            responses.add(getCartResponse);
+        }
+
+        return SaResult.ok("success").setData(responses);
+    }
+
+    /**
+     * 获取未支付的订单
+     *
+     * @return 订单信息
+     */
+    @Override
+    public SaResult getUnpaidOrder() {
+        String userId = StpUtil.getLoginIdAsString();
+
+        try {
+            List<String> orderIds = userOrderService.getOrderId(userId);
+            List<Orders> orders = ordersService.getOrdersWithState(orderIds, State.UNPAID);
+            double price = 0.0;
+            for (Orders order : orders) {
+                price += order.getPrice();
+            }
+            return SaResult.ok("success").setData(orders).set("price", price);
+        } catch (Exception e) {
+            log.error("获取未支付订单错误: {}", e.toString());
+            return SaResult.error("获取未支付订单错误: " + e.toString());
+        }
+    }
+
+    /**
+     * 支付订单
+     *
+     * @param orderId 订单ID
+     * @return 状态
+     */
+    @Override
+    public SaResult payOrder(String orderId) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+        Orders orders = ordersService.getById(orderId);
+        //获取支付状态(Api 待实现 当前默认支付成功)
+
+        orders.setState(State.PAID);
+        try {
+            ordersService.updateById(orders);
+            BaseContext.clear();
+            return SaResult.ok("success");
+        } catch (Exception e) {
+            log.error("数据库错误: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("数据库错误: " + e.toString()).setData(orders);
+        }
+    }
+
+    /**
+     * 批量支付订单
+     *
+     * @param orderIds 订单ID列表
+     * @return 支付状态
+     */
+    @Override
+    public SaResult payOrders(List<String> orderIds) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        List<Orders> orders = ordersService.getOrders(orderIds);
+        double price = 0.0;
+        for (Orders order : orders) {
+            price += order.getPrice();
+        }
+        //检查支付状态(APi 待实现 默认支付成功)
+
+        for (Orders order : orders) {
+            order.setState(State.PAID);
+        }
+        try {
+            ordersService.updateBatchById(orders);
+            return SaResult.ok("success").set("price", price);
+        } catch (Exception e) {
+            log.error("更新数据库错误: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("更新数据库错误: " + e.toString());
+        }
     }
 }
 

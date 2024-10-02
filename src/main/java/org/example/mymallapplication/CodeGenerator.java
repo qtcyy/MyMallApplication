@@ -34,9 +34,10 @@ public class CodeGenerator {
                                 .pathInfo(Collections.singletonMap(OutputFile.xml, "/Users/chengyiyang/Desktop/程序设计/Java/")) // 设置mapperXml生成路径
                 )
                 .strategyConfig(builder ->
-                        builder.addInclude("product_reviews", "review_likes") // 设置需要生成的表名
+                        builder.addInclude("cart") // 设置需要生成的表名
                 )
-                .templateEngine(new FreemarkerTemplateEngine()) // 使用Freemarker引擎模板，默认的是Velocity引擎模板
+                // 使用Freemarker引擎模板，默认的是Velocity引擎模板
+                .templateEngine(new FreemarkerTemplateEngine())
                 .execute();
 
     }

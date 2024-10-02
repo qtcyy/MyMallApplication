@@ -24,5 +24,7 @@ public interface IOrdersService extends IService<Orders> {
 
     List<Orders> getOrderByState(State state);
 
+    List<Orders> getOrdersWithState(List<String> orderIds, State state);
+
     List<Orders> getOrderToConfirm(State state, LocalDateTime fifteenDaysTime);
 }

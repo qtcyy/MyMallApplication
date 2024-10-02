@@ -10,6 +10,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+/**
+ * @author chengyiyang
+ */
 @Configuration
 public class RedisConfig {
     @Value("${spring.data.redis.host}")

@@ -4,6 +4,9 @@ import lombok.Data;
 import org.example.mymallapplication.dal.enums.Gender;
 import org.example.mymallapplication.dal.enums.Location;
 
+/**
+ * @author chengyiyang
+ */
 @Data
 public class UpdateUserRequest {
     private String username;

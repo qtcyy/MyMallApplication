@@ -7,6 +7,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author chengyiyang
+ */
 @Data
 public class UpdateInfo {
     @TableField(value = "create_by", fill = FieldFill.INSERT)

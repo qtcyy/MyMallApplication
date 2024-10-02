@@ -6,6 +6,9 @@ import org.example.mymallapplication.dal.dao.entity.product.Products;
 
 import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 @Data
 public class GetCateResponse {
     List<Category> categories;

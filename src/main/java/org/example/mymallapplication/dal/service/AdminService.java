@@ -8,6 +8,9 @@ import org.example.mymallapplication.dal.vo.request.UpdateUserRequest;
 
 import java.util.List;
 
+/**
+ * @author chengyiyang
+ */
 public interface AdminService {
     SaResult adminLogin(AdminLoginRequest request);
 

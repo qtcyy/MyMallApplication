@@ -3,6 +3,10 @@ package org.example.mymallapplication.dal.enums;
 import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.Getter;
 
+/**
+ * @author chengyiyang
+ */
+
 public enum Location implements IEnum<Integer> {
     // 直辖市
     BEIJING(1, "北京市"),

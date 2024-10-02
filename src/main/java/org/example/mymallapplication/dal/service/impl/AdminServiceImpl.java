@@ -19,6 +19,7 @@ import org.example.mymallapplication.dal.vo.request.AdminRegisterRequest;
 import org.example.mymallapplication.dal.vo.request.ChangePwdRequest;
 import org.example.mymallapplication.dal.vo.request.UpdateUserRequest;
 import org.example.mymallapplication.dal.vo.response.AdminLoginResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,7 +73,7 @@ public class AdminServiceImpl implements AdminService {
      * @return 注册状态
      */
     @Override
-    public SaResult adminRegister(AdminRegisterRequest request) {
+    public SaResult adminRegister(@NotNull AdminRegisterRequest request) {
         if (usersService.hasUser(request.getUsername()) || service.hasUser(request.getUsername())) {
             return SaResult.error("用户已存在!");
         }
@@ -146,7 +147,7 @@ public class AdminServiceImpl implements AdminService {
      * @return 更改状态
      */
     @Override
-    public SaResult changeUserInfo(String mode, UpdateUserRequest request) {
+    public SaResult changeUserInfo(@NotNull String mode, UpdateUserRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         switch (mode) {
             case "insert": {

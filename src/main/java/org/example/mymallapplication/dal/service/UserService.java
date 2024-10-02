@@ -3,6 +3,11 @@ package org.example.mymallapplication.dal.service;
 import cn.dev33.satoken.util.SaResult;
 import org.example.mymallapplication.dal.vo.request.*;
 
+import java.util.List;
+
+/**
+ * @author chengyiyang
+ */
 public interface UserService {
 
     SaResult userLogin(UserLoginRequest request);
@@ -28,4 +33,14 @@ public interface UserService {
     SaResult likeCommit(String id);
 
     SaResult getCommit(String productId, int page, int size);
+
+    SaResult addToCart(AddCartRequest request);
+
+    SaResult getCart();
+
+    SaResult getUnpaidOrder();
+
+    SaResult payOrder(String orderId);
+
+    SaResult payOrders(List<String> orderIds);
 }

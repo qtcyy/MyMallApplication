@@ -5,6 +5,9 @@ import lombok.Data;
 import org.example.mymallapplication.dal.enums.Gender;
 import org.example.mymallapplication.dal.enums.Location;
 
+/**
+ * @author chengyiyang
+ */
 @Data
 public class UserRegisterRequest {
     @NotBlank(message = "用户名不能为空")
