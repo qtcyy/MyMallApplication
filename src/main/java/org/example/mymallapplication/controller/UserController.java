@@ -24,6 +24,12 @@ public class UserController {
     UserService userService;
 
     @SaIgnore
+    @GetMapping("/advertisement/show")
+    public SaResult showAdvertisement() {
+        return userService.showAdvertisement();
+    }
+
+    @SaIgnore
     @PostMapping("/login")
     public SaResult doLogin(@RequestBody UserLoginRequest request) {
         return userService.userLogin(request);
@@ -94,6 +100,12 @@ public class UserController {
     }
 
     @SaCheckLogin
+    @PostMapping("/product/commit/image/")
+    public SaResult addCommitImages(@RequestBody AddImageRequest request) {
+        return userService.addReviewImage(request);
+    }
+
+    @SaCheckLogin
     @GetMapping("/product/commit/like/{id}")
     public SaResult likeCommit(@PathVariable String id) {
         return userService.likeCommit(id);
@@ -107,6 +119,12 @@ public class UserController {
             @RequestParam int size
     ) {
         return userService.getCommit(productId, page, size);
+    }
+
+    @SaIgnore
+    @GetMapping("/product/commit/get/images/{reviewId}")
+    public SaResult getCommitImages(@PathVariable String reviewId) {
+        return userService.getCommitImages(reviewId);
     }
 
     @SaCheckLogin

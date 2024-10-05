@@ -13,7 +13,7 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         // 代码生成器
-        FastAutoGenerator.create("jdbc:mysql://localhost:3306/my_mail_db", "root", "12345678")
+        FastAutoGenerator.create("jdbc:mysql://localhost:3306/my_mail_db2", "root", "12345678")
                 .globalConfig(builder -> {
                     builder.author("qtcyy") // 设置作者
                             .enableSwagger() // 开启 swagger 模式
@@ -34,7 +34,7 @@ public class CodeGenerator {
                                 .pathInfo(Collections.singletonMap(OutputFile.xml, "/Users/chengyiyang/Desktop/程序设计/Java/")) // 设置mapperXml生成路径
                 )
                 .strategyConfig(builder ->
-                        builder.addInclude("cart") // 设置需要生成的表名
+                        builder.addInclude("review_images") // 设置需要生成的表名
                 )
                 // 使用Freemarker引擎模板，默认的是Velocity引擎模板
                 .templateEngine(new FreemarkerTemplateEngine())

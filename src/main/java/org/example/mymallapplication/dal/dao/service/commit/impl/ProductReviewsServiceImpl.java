@@ -58,6 +58,19 @@ public class ProductReviewsServiceImpl extends ServiceImpl<ProductReviewsMapper,
     }
 
     /**
+     * 根据产品ID获取评论
+     *
+     * @param productId 产品ID
+     * @return 评论列表
+     */
+    @Override
+    public List<ProductReviews> getReviewsByProductId(String productId) {
+        LambdaQueryWrapper<ProductReviews> reviewsWrapper = new LambdaQueryWrapper<>();
+        reviewsWrapper.eq(ProductReviews::getProductId, productId);
+        return this.list(reviewsWrapper);
+    }
+
+    /**
      * 根据父评论ID获取子评论
      *
      * @param parentId 父评论ID
@@ -88,5 +101,37 @@ public class ProductReviewsServiceImpl extends ServiceImpl<ProductReviewsMapper,
 
         List<ProductReviews> replies = this.list(reviewsWrapper);
         return replies.stream().collect(Collectors.groupingBy(ProductReviews::getParentId));
+    }
+
+    /**
+     * 获取差评
+     *
+     * @param productId 产品ID
+     * @param page      分页信息
+     * @return 差评
+     */
+    @Override
+    public IPage<ProductReviews> getBadReviews(String productId, Page<ProductReviews> page) {
+        LambdaQueryWrapper<ProductReviews> reviewsWrapper = new LambdaQueryWrapper<>();
+        reviewsWrapper.eq(ProductReviews::getProductId, productId)
+                .le(ProductReviews::getRating, 2)
+                .orderByDesc(ProductReviews::getCreateTime);
+        return this.page(page, reviewsWrapper);
+    }
+
+    /**
+     * 获取好评
+     *
+     * @param productId 产品ID
+     * @param page      分页信息
+     * @return 好评
+     */
+    @Override
+    public IPage<ProductReviews> getGoodReviews(String productId, Page<ProductReviews> page) {
+        LambdaQueryWrapper<ProductReviews> reviewsWrapper = new LambdaQueryWrapper<>();
+        reviewsWrapper.eq(ProductReviews::getProductId, productId)
+                .ge(ProductReviews::getRating, 4)
+                .orderByDesc(ProductReviews::getCreateTime);
+        return this.page(page, reviewsWrapper);
     }
 }

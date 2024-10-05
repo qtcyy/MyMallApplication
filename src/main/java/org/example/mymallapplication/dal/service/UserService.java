@@ -34,6 +34,8 @@ public interface UserService {
 
     SaResult getCommit(String productId, int page, int size);
 
+    SaResult getCommitImages(String reviewId);
+
     SaResult addToCart(AddCartRequest request);
 
     SaResult getCart();
@@ -43,4 +45,8 @@ public interface UserService {
     SaResult payOrder(String orderId);
 
     SaResult payOrders(List<String> orderIds);
+
+    SaResult showAdvertisement();
+
+    SaResult addReviewImage(AddImageRequest request);
 }

@@ -1,6 +1,7 @@
 package org.example.mymallapplication.dal.dao.service.commit;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.example.mymallapplication.dal.dao.entity.commit.ProductReviews;
 
@@ -21,7 +22,13 @@ public interface IProductReviewsService extends IService<ProductReviews> {
 
     IPage<ProductReviews> getMainReviews(String productId, int page, int size);
 
+    List<ProductReviews> getReviewsByProductId(String productId);
+
     List<ProductReviews> getListByParent(String parentId);
 
     Map<String, List<ProductReviews>> getRepliesByParentIds(List<String> parentIds);
+
+    IPage<ProductReviews> getBadReviews(String productId, Page<ProductReviews> page);
+
+    IPage<ProductReviews> getGoodReviews(String productId, Page<ProductReviews> page);
 }

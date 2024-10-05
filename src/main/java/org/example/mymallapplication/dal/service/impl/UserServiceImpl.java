@@ -11,18 +11,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.mymallapplication.common.BaseContext;
 import org.example.mymallapplication.dal.config.RabbitMQConfig;
 import org.example.mymallapplication.dal.dao.entity.commit.ProductReviews;
+import org.example.mymallapplication.dal.dao.entity.commit.ReviewImages;
 import org.example.mymallapplication.dal.dao.entity.commit.ReviewLikes;
 import org.example.mymallapplication.dal.dao.entity.person.Balance;
 import org.example.mymallapplication.dal.dao.entity.person.Cart;
 import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
+import org.example.mymallapplication.dal.dao.entity.product.Advertisements;
 import org.example.mymallapplication.dal.dao.entity.product.Orders;
 import org.example.mymallapplication.dal.dao.entity.product.Products;
 import org.example.mymallapplication.dal.dao.service.commit.IProductReviewsService;
+import org.example.mymallapplication.dal.dao.service.commit.IReviewImagesService;
 import org.example.mymallapplication.dal.dao.service.commit.IReviewLikesService;
 import org.example.mymallapplication.dal.dao.service.person.IBalanceService;
 import org.example.mymallapplication.dal.dao.service.person.ICartService;
 import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersService;
 import org.example.mymallapplication.dal.dao.service.person.IUsersService;
+import org.example.mymallapplication.dal.dao.service.product.IAdvertisementsService;
 import org.example.mymallapplication.dal.dao.service.product.IOrdersService;
 import org.example.mymallapplication.dal.dao.service.product.IProductsService;
 import org.example.mymallapplication.dal.dao.service.product.IUserOrderService;
@@ -35,6 +39,7 @@ import org.example.mymallapplication.dal.vo.response.UserLoginResponse;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -69,9 +74,15 @@ public class UserServiceImpl implements UserService {
     private IProductsService productsService;
     @Autowired
     private IUserOrderService userOrderService;
+    @Autowired
+    private IAdvertisementsService advertisementsService;
+    @Autowired
+    private IReviewImagesService reviewImagesService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * <p>用户登陆服务</p>
@@ -276,7 +287,7 @@ public class UserServiceImpl implements UserService {
      * 写评论
      *
      * @param request 评论请求
-     * @return 评论状态
+     * @return 评论状态(包含评论ID " reviewId ")
      */
     @Override
     public SaResult writeCommit(WriteCommitRequest request) {
@@ -295,7 +306,7 @@ public class UserServiceImpl implements UserService {
         }
 
         BaseContext.clear();
-        return SaResult.ok("success");
+        return SaResult.ok("success").set("reviewId", reviews.getId());
     }
 
     /**
@@ -385,6 +396,18 @@ public class UserServiceImpl implements UserService {
                 .set("currentPage", mainReviews.getCurrent())
                 .set("totalPages", mainReviews.getPages())
                 .set("totalRecords", mainReviews.getTotal());
+    }
+
+    /**
+     * 获取评图片
+     *
+     * @param reviewId 评论ID
+     * @return 评论图片
+     */
+    @Override
+    public SaResult getCommitImages(String reviewId) {
+        List<ReviewImages> reviewImages = reviewImagesService.getReviewImages(reviewId);
+        return SaResult.ok("success").setData(reviewImages);
     }
 
     /**
@@ -528,6 +551,50 @@ public class UserServiceImpl implements UserService {
             BaseContext.clear();
             return SaResult.error("更新数据库错误: " + e.toString());
         }
+    }
+
+    /**
+     * 显示广告
+     *
+     * @return 广告信息
+     */
+    @Override
+    public SaResult showAdvertisement() {
+        try {
+            List<Advertisements> list = advertisementsService.getAvailableAdvertisements();
+
+            return SaResult.ok("success").setData(list);
+        } catch (Exception e) {
+            log.error("获取广告错误: {}", e.toString());
+            return SaResult.error("获取广告错误: " + e.toString());
+        }
+    }
+
+    /**
+     * 添加评论图片
+     *
+     * @return 添加状况
+     */
+    @Override
+    public SaResult addReviewImage(AddImageRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        ReviewImages reviewImage = new ReviewImages();
+        BeanUtil.copyProperties(request, reviewImage);
+
+        SaResult result;
+        try {
+            reviewImagesService.save(reviewImage);
+            result = SaResult.ok("success");
+        } catch (Exception e) {
+            log.error("添加图片错误: {}", e.toString());
+            result = SaResult.error("添加图片错误: " + e.toString());
+        } finally {
+            BaseContext.clear();
+        }
+
+        return result;
     }
 }
 

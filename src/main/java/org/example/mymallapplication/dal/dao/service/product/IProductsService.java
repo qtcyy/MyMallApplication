@@ -34,6 +34,8 @@ public interface IProductsService extends IService<Products> {
 
     IPage<Products> getProductPage(Page<Products> page, String name);
 
+    IPage<Products> getProductRange(Page<Products> page, String name, int minPrice, int maxPrice);
+
     boolean changeProduct(Products product);
 
     boolean deleteProduct(String id);

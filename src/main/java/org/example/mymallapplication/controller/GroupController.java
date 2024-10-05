@@ -11,6 +11,9 @@ import org.example.mymallapplication.dal.vo.request.GroupCateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @author chengyiyang
+ */
 @RestController
 @RequestMapping("/category")
 public class GroupController {

@@ -138,6 +138,24 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products> i
     }
 
     /**
+     * 根据名称和价格范围来查询商品
+     *
+     * @param page     分页信息
+     * @param name     商品名称
+     * @param minPrice 最小价格
+     * @param maxPrice 最大价格
+     * @return 分页信息
+     */
+    @Override
+    public IPage<Products> getProductRange(Page<Products> page, String name, int minPrice, int maxPrice) {
+        LambdaQueryWrapper<Products> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(Products::getName, name)
+                .or().like(Products::getDescription, name)
+                .and(i -> i.between(Products::getPrice, minPrice, maxPrice));
+        return this.page(page, queryWrapper);
+    }
+
+    /**
      * <p>更新产品信息</p>
      *
      * @param product 产品信息

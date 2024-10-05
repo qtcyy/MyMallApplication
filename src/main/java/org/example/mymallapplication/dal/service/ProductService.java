@@ -14,9 +14,23 @@ public interface ProductService {
 
     SaResult getProductsPage(String name, int page, int size);
 
+    SaResult getProductsGroup(String groupId);
+
     SaResult changeProduct(Products newProduct);
 
     SaResult deleteProduct(String id);
 
     SaResult shipProduct(ShippingRequest request);
+
+    SaResult getStar(String id);
+
+    SaResult getBadComment(String id, int page, int size);
+
+    SaResult getGoodComment(String id, int page, int size);
+
+    SaResult getProductsPageDesc(String name, int page, int size);
+
+    SaResult getProductsPageDsc(String name, int page, int size);
+
+    SaResult getProductsPageRange(String name, int minPrice, int maxPrice, int page, int size);
 }
