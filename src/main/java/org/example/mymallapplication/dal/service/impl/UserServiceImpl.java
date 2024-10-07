@@ -26,15 +26,13 @@ import org.example.mymallapplication.dal.dao.service.person.IBalanceService;
 import org.example.mymallapplication.dal.dao.service.person.ICartService;
 import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersService;
 import org.example.mymallapplication.dal.dao.service.person.IUsersService;
-import org.example.mymallapplication.dal.dao.service.product.IAdvertisementsService;
-import org.example.mymallapplication.dal.dao.service.product.IOrdersService;
-import org.example.mymallapplication.dal.dao.service.product.IProductsService;
-import org.example.mymallapplication.dal.dao.service.product.IUserOrderService;
+import org.example.mymallapplication.dal.dao.service.product.*;
 import org.example.mymallapplication.dal.enums.State;
 import org.example.mymallapplication.dal.redis.service.RedisService;
 import org.example.mymallapplication.dal.service.UserService;
 import org.example.mymallapplication.dal.vo.request.*;
 import org.example.mymallapplication.dal.vo.response.GetCartResponse;
+import org.example.mymallapplication.dal.vo.response.GetUserInfoResponse;
 import org.example.mymallapplication.dal.vo.response.UserLoginResponse;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -42,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +71,8 @@ public class UserServiceImpl implements UserService {
     private ICartService cartService;
     @Autowired
     private IProductsService productsService;
+    @Autowired
+    private IProductOrderService productOrderService;
     @Autowired
     private IUserOrderService userOrderService;
     @Autowired
@@ -217,15 +218,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public SaResult getUserInfo() {
         String username = String.valueOf(StpUtil.getSession().get("username"));
+        String userId = StpUtil.getLoginIdAsString();
+        Balance balance = balanceService.getBalanceByUserId(userId);
+        GetUserInfoResponse response = new GetUserInfoResponse();
+
         if (redis.hasKey(username)) {
             FrontendUsers users = redis.getUserFromRedis(username);
-            return SaResult.ok("success").setData(users);
+            BeanUtil.copyProperties(users, response);
+            response.setBalance(balance.getBalance());
+            return SaResult.ok("success").setData(response);
         }
 
         FrontendUsers users = usersService.getFrontendUsers(StpUtil.getLoginIdAsString());
         redis.saveUserToRedis(username, users);
+        redis.setExpire(username, 1L, TimeUnit.HOURS);
 
-        return SaResult.ok("success").setData(users);
+
+        BeanUtil.copyProperties(users, response);
+        response.setBalance(balance.getBalance());
+
+        return SaResult.ok("success").setData(balance);
     }
 
     /**
@@ -378,24 +390,30 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public SaResult getCommit(String productId, int page, int size) {
-        IPage<ProductReviews> mainReviews = productReviewsService.getMainReviews(productId, page, size);
+        try {
+            IPage<ProductReviews> mainReviews = productReviewsService.getMainReviews(productId, page, size);
 
-        List<String> mainReviewIds = mainReviews.getRecords().stream()
-                .map(ProductReviews::getId).toList();
-        Map<String, List<ProductReviews>> replyMap = productReviewsService.getRepliesByParentIds(mainReviewIds);
+            List<String> mainReviewIds = mainReviews.getRecords().stream()
+                    .map(ProductReviews::getId).toList();
+            Map<String, List<ProductReviews>> replyMap = productReviewsService.getRepliesByParentIds(mainReviewIds);
 
-        List<NewReviews> newReviews = new ArrayList<>();
-        for (ProductReviews review : mainReviews.getRecords()) {
-            NewReviews newReview = new NewReviews();
-            newReview.setReviews(replyMap.getOrDefault(review.getParentId(), new ArrayList<>()));
-            newReviews.add(newReview);
+            List<NewReviews> newReviews = new ArrayList<>();
+            for (ProductReviews review : mainReviews.getRecords()) {
+                NewReviews newReview = new NewReviews();
+                BeanUtil.copyProperties(review, newReview);
+                newReview.setReviews(replyMap.getOrDefault(review.getParentId(), new ArrayList<>()));
+                newReviews.add(newReview);
+            }
+
+            return SaResult.ok("success")
+                    .setData(newReviews)
+                    .set("currentPage", mainReviews.getCurrent())
+                    .set("totalPages", mainReviews.getPages())
+                    .set("totalRecords", mainReviews.getTotal());
+        } catch (Exception e) {
+            log.error("获取评论错误: {}", e.toString());
+            return SaResult.error("获取评论错误");
         }
-
-        return SaResult.ok("success")
-                .setData(newReviews)
-                .set("currentPage", mainReviews.getCurrent())
-                .set("totalPages", mainReviews.getPages())
-                .set("totalRecords", mainReviews.getTotal());
     }
 
     /**
@@ -417,7 +435,7 @@ public class UserServiceImpl implements UserService {
      * @return 添加信息
      */
     @Override
-    public SaResult addToCart(@org.jetbrains.annotations.NotNull AddCartRequest request) {
+    public SaResult addToCart(@NotNull AddCartRequest request) {
         String userId = StpUtil.getLoginIdAsString();
         BaseContext.setCurrentId(userId);
 
@@ -595,6 +613,76 @@ public class UserServiceImpl implements UserService {
         }
 
         return result;
+    }
+
+    /**
+     * 退款服务
+     *
+     * @param request 退款请求
+     * @return 退款状态
+     */
+    @Override
+    public SaResult refundOrder(@NotNull RefundOrderRequest request) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        Orders order = ordersService.getById(request.getOrderId());
+
+        SaResult saResult = null;
+        switch (order.getState()) {
+            case UNPAID -> {
+                rabbitTemplate.convertAndSend(RabbitMQConfig.DELAYED_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY,
+                        order, message -> {
+                            message.getMessageProperties().getHeaders().putAll(new HashMap<>() {{
+                                put("x-delay", 1000L);
+                            }});
+                            return message;
+                        });
+            }
+            case PAID -> {
+                String id = userOrderService.getUserId(order.getId());
+                Balance balance = balanceService.getBalanceByUserId(id);
+                balance.setBalance(balance.getBalance() + order.getPrice());
+
+                String productId = productOrderService.getProductId(order.getId());
+                Products product = productsService.getProducts(productId);
+                product.setNumber(product.getNumber() + order.getNumber());
+
+                try {
+                    balanceService.updateById(balance);
+                    productsService.updateById(product);
+                    saResult = SaResult.ok("success");
+                } catch (Exception e) {
+                    log.error("退款数据库错误: {}", e.toString());
+                    saResult = SaResult.error("退款数据库错误: " + e.toString());
+                }
+            }
+            case TRANSPORT -> {
+                saResult = SaResult.error("运输中，不可退款");
+            }
+            case LANDING -> {
+                LocalDateTime shipping = order.getShippingTime();
+                if (shipping.plusDays(7).isBefore(LocalDateTime.now())) {
+                    saResult = SaResult.error("超过7天，不可退款");
+                } else {
+                    rabbitTemplate.convertAndSend(RabbitMQConfig.DELAYED_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY,
+                            order, message -> {
+                                message.getMessageProperties().getHeaders().putAll(new HashMap<>() {{
+                                    put("x-delay", 1000L);
+                                }});
+                                return message;
+                            });
+                    saResult = SaResult.ok("success");
+                }
+            }
+            case FINISH -> {
+                return SaResult.error("联系客服退款");
+            }
+            default -> {
+                saResult = SaResult.error("不可退款");
+            }
+        }
+        return saResult;
     }
 }
 

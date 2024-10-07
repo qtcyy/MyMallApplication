@@ -49,4 +49,6 @@ public interface UserService {
     SaResult showAdvertisement();
 
     SaResult addReviewImage(AddImageRequest request);
+
+    SaResult refundOrder(RefundOrderRequest request);
 }

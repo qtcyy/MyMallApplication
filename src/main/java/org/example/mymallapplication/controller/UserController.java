@@ -88,7 +88,7 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @PostMapping("/product/commit/")
+    @PostMapping("/product/commit")
     public SaResult writeCommit(@Valid @RequestBody WriteCommitRequest request) {
         return userService.writeCommit(request);
     }
@@ -100,7 +100,7 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @PostMapping("/product/commit/image/")
+    @PostMapping("/product/commit/image")
     public SaResult addCommitImages(@RequestBody AddImageRequest request) {
         return userService.addReviewImage(request);
     }
@@ -112,9 +112,9 @@ public class UserController {
     }
 
     @SaIgnore
-    @GetMapping("/product/commit/show/{productId}")
+    @GetMapping("/product/commit/show")
     public SaResult commit(
-            @PathVariable String productId,
+            @RequestParam String productId,
             @RequestParam int page,
             @RequestParam int size
     ) {
@@ -155,5 +155,11 @@ public class UserController {
     @PostMapping("/order/pay")
     public SaResult payOrders(@NotBlank(message = "订单ID不能为空") @RequestBody List<String> orderIds) {
         return userService.payOrders(orderIds);
+    }
+
+    @SaCheckLogin
+    @PostMapping("/order/refund")
+    public SaResult refundOrder(@Valid @RequestBody RefundOrderRequest request) {
+        return userService.refundOrder(request);
     }
 }

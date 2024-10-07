@@ -109,6 +109,14 @@ public class ProductController {
         return productService.getProductsPageRange(name, minPrice, maxPrice, page, size);
     }
 
+    /**
+     * 按销量升序获取商品信息
+     *
+     * @param name 商品名
+     * @param page 页数
+     * @param size 每页大小
+     * @return 商品信息
+     */
     @SaIgnore
     @GetMapping("/get/onPage/dsc")
     public SaResult getOnPageDsc(@RequestParam String name, @RequestParam int page, @RequestParam int size) {

@@ -50,7 +50,7 @@ public class ProductReviewsServiceImpl extends ServiceImpl<ProductReviewsMapper,
     public IPage<ProductReviews> getMainReviews(String productId, int page, int size) {
         Page<ProductReviews> reviewPage = new Page<>(page, size);
         LambdaQueryWrapper<ProductReviews> reviewsWrapper = new LambdaQueryWrapper<>();
-        reviewsWrapper.eq(ProductReviews::getParentId, productId)
+        reviewsWrapper.eq(ProductReviews::getProductId, productId)
                 .isNull(ProductReviews::getParentId)
                 .orderByDesc(ProductReviews::getCreateTime);
         //分页查询
