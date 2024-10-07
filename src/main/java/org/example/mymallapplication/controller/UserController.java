@@ -106,9 +106,9 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @GetMapping("/product/commit/like/{id}")
-    public SaResult likeCommit(@PathVariable String id) {
-        return userService.likeCommit(id);
+    @GetMapping("/product/commit/like")
+    public SaResult likeCommit(@RequestParam String commitId) {
+        return userService.likeCommit(commitId);
     }
 
     @SaIgnore

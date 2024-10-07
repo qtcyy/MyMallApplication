@@ -333,18 +333,21 @@ public class UserServiceImpl implements UserService {
         BaseContext.setCurrentId(userId);
 
         ProductReviews reviews = new ProductReviews();
-        BeanUtil.copyProperties(request, reviews);
+        reviews.setParentId(request.getParentId());
+        reviews.setContent(request.getContent());
 
         reviews.setUserId(userId);
         ProductReviews parentReviews = productReviewsService.getById(reviews.getParentId());
         if (parentReviews != null) {
-            reviews.setParentId(parentReviews.getParentId());
+            reviews.setProductId(parentReviews.getProductId());
+        } else {
+            return SaResult.error("父评论不存在");
         }
-
         try {
             productReviewsService.save(reviews);
         } catch (Exception e) {
             BaseContext.clear();
+            log.error("回复评论数据库错误: {}", e.toString());
             return SaResult.error("数据库错误" + e.toString());
         }
 
@@ -362,16 +365,18 @@ public class UserServiceImpl implements UserService {
     public SaResult likeCommit(String id) {
         String userId = StpUtil.getLoginIdAsString();
         BaseContext.setCurrentId(userId);
-
-        ReviewLikes reviewLikes = new ReviewLikes();
-        reviewLikes.setUserId(userId);
-        reviewLikes.setReviewId(id);
-
         try {
-            reviewLikesService.save(reviewLikes);
             ProductReviews reviews = productReviewsService.getReview(id);
+            if (reviews == null) {
+                throw new Exception("评论不存在");
+            }
+            ReviewLikes reviewLikes = new ReviewLikes();
+            reviewLikes.setUserId(userId);
+            reviewLikes.setReviewId(id);
+            reviewLikesService.save(reviewLikes);
+
             reviews.setLikeCount(reviews.getLikeCount() + 1);
-            productReviewsService.save(reviews);
+            productReviewsService.updateById(reviews);
         } catch (Exception e) {
             log.error("点赞保存错误: {}", e.toString());
             BaseContext.clear();
@@ -401,7 +406,7 @@ public class UserServiceImpl implements UserService {
             for (ProductReviews review : mainReviews.getRecords()) {
                 NewReviews newReview = new NewReviews();
                 BeanUtil.copyProperties(review, newReview);
-                newReview.setReviews(replyMap.getOrDefault(review.getParentId(), new ArrayList<>()));
+                newReview.setReviews(replyMap.getOrDefault(review.getId(), new ArrayList<>()));
                 newReviews.add(newReview);
             }
 

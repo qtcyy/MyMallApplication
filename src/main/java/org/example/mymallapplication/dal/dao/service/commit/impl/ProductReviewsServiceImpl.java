@@ -34,7 +34,7 @@ public class ProductReviewsServiceImpl extends ServiceImpl<ProductReviewsMapper,
     @Override
     public ProductReviews getReview(String id) {
         LambdaQueryWrapper<ProductReviews> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ProductReviews::getParentId, id).last("limit 1");
+        wrapper.eq(ProductReviews::getId, id).last("limit 1");
 
         return this.getOne(wrapper);
     }
