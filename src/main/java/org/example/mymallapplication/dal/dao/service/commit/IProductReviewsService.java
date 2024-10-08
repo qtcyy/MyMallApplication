@@ -22,6 +22,8 @@ public interface IProductReviewsService extends IService<ProductReviews> {
 
     IPage<ProductReviews> getMainReviews(String productId, int page, int size);
 
+    IPage<ProductReviews> getSelfReviews(Page<ProductReviews> page, String userId);
+
     List<ProductReviews> getReviewsByProductId(String productId);
 
     List<ProductReviews> getListByParent(String parentId);

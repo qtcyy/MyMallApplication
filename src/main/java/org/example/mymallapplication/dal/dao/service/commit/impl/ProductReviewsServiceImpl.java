@@ -58,6 +58,22 @@ public class ProductReviewsServiceImpl extends ServiceImpl<ProductReviewsMapper,
     }
 
     /**
+     * 获取用户评论
+     *
+     * @param page   分页信息
+     * @param userId 用户ID
+     * @return 用户评论
+     */
+    @Override
+    public IPage<ProductReviews> getSelfReviews(Page<ProductReviews> page, String userId) {
+        LambdaQueryWrapper<ProductReviews> reviewsWrapper = new LambdaQueryWrapper<>();
+        reviewsWrapper.eq(ProductReviews::getUserId, userId)
+                .isNull(ProductReviews::getParentId)
+                .orderByDesc(ProductReviews::getCreateTime);
+        return this.page(page, reviewsWrapper);
+    }
+
+    /**
      * 根据产品ID获取评论
      *
      * @param productId 产品ID

@@ -128,6 +128,12 @@ public class UserController {
         return userService.getCommit(productId, page, size);
     }
 
+    @SaCheckLogin
+    @GetMapping("/product/commit/show/self")
+    public SaResult getSelfCommit(@RequestParam int page, @RequestParam int size) {
+        return userService.getSelfCommit(page, size);
+    }
+
     @SaIgnore
     @GetMapping("/product/commit/get/images/{reviewId}")
     public SaResult getCommitImages(@PathVariable String reviewId) {

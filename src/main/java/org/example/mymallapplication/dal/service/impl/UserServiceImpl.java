@@ -425,6 +425,33 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public SaResult getSelfCommit(int page, int size) {
+        String userId = StpUtil.getLoginIdAsString();
+
+        Page<ProductReviews> reviewPage = new Page<>(page, size);
+        IPage<ProductReviews> mainReviews = productReviewsService.getSelfReviews(reviewPage, userId);
+        List<NewReviews> newReviews = new ArrayList<>();
+        if (mainReviews.getRecords().isEmpty()) {
+            return SaResult.ok("无评论");
+        }
+
+        for (ProductReviews review : mainReviews.getRecords()) {
+            NewReviews newReview = new NewReviews();
+            BeanUtil.copyProperties(review, newReview);
+            String parentId = review.getId();
+            List<ProductReviews> replies = productReviewsService.getListByParent(parentId);
+            newReview.setReviews(replies);
+            newReviews.add(newReview);
+        }
+
+        return SaResult.ok("success")
+                .setData(newReviews)
+                .set("currentPage", mainReviews.getCurrent())
+                .set("totalPages", mainReviews.getPages())
+                .set("totalRecords", mainReviews.getTotal());
+    }
+
     /**
      * 获取评图片
      *
