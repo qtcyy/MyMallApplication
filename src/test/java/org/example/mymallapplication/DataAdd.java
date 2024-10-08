@@ -145,4 +145,9 @@ public class DataAdd {
         balance.setUserId(userId);
         balanceService.save(balance);
     }
+
+    @Test
+    void passwdTest() {
+        System.out.println(SaSecureUtil.sha256("123456"));
+    }
 }

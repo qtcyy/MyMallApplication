@@ -41,6 +41,20 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     }
 
     /**
+     * <p>获取订单列表</p>
+     *
+     * @param page 分页
+     * @param ids  订单ID列表
+     * @return 订单实体类列表
+     */
+    @Override
+    public IPage<Orders> getOrders(IPage<Orders> page, List<String> ids) {
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Orders::getId, ids);
+        return this.page(page);
+    }
+
+    /**
      * <p>根据状态获取分页后的order</p>
      *
      * @param state 状态

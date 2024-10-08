@@ -5,6 +5,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -149,7 +150,7 @@ public class UserServiceImpl implements UserService {
     public SaResult changePwd(ChangePwdRequest request) {
         BaseContext.setCurrentId(StpUtil.getLoginIdAsString());
         String userId = StpUtil.getLoginIdAsString();
-        FrontendUsers user = usersService.getFrontendUsers(userId);
+        FrontendUsers user = usersService.getById(userId);
         if (redis.hasKey(user.getUsername())) {
             redis.deleteKey(user.getUsername());
         }
@@ -397,6 +398,9 @@ public class UserServiceImpl implements UserService {
     public SaResult getCommit(String productId, int page, int size) {
         try {
             IPage<ProductReviews> mainReviews = productReviewsService.getMainReviews(productId, page, size);
+            if (mainReviews.getRecords().isEmpty()) {
+                return SaResult.ok("无评论");
+            }
 
             List<String> mainReviewIds = mainReviews.getRecords().stream()
                     .map(ProductReviews::getId).toList();
@@ -444,6 +448,11 @@ public class UserServiceImpl implements UserService {
         String userId = StpUtil.getLoginIdAsString();
         BaseContext.setCurrentId(userId);
 
+        if (productsService.getById(request.getProductId()) == null) {
+            log.error("商品不存在");
+            return SaResult.error("商品不存在");
+        }
+
         Cart cart = cartService.getCart(userId, request.getProductId());
         if (cart == null) {
             cart = new Cart();
@@ -473,6 +482,64 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 删除购物车
+     *
+     * @param productId 商品ID
+     * @return 删除状态
+     */
+    @Override
+    public SaResult deleteCart(String productId) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        Cart cart = cartService.getCart(userId, productId);
+        if (cart == null) {
+            return SaResult.error("购物车无此商品");
+        }
+
+        try {
+            cartService.removeById(cart.getId());
+        } catch (Exception e) {
+            log.error("删除购物车错误: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("删除购物车错误: " + e.toString());
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
+     * 更改购物车
+     *
+     * @param productId 商品ID
+     * @param quantity  数量
+     * @return 状态
+     */
+    @Override
+    public SaResult changeCart(String productId, int quantity) {
+        String userId = StpUtil.getLoginIdAsString();
+        BaseContext.setCurrentId(userId);
+
+        Cart cart = cartService.getCart(userId, productId);
+        if (cart == null) {
+            return SaResult.error("购物车无此商品");
+        }
+
+        cart.setQuantity(quantity);
+        try {
+            cartService.updateById(cart);
+        } catch (Exception e) {
+            log.error("更新购物车错误: {}", e.toString());
+            BaseContext.clear();
+            return SaResult.error("更新购物车错误: " + e.toString());
+        }
+
+        BaseContext.clear();
+        return SaResult.ok("success");
+    }
+
+    /**
      * 获取购物车信息
      *
      * @return 购物车信息
@@ -481,20 +548,55 @@ public class UserServiceImpl implements UserService {
     public SaResult getCart() {
         String userId = StpUtil.getLoginIdAsString();
         List<GetCartResponse> responses = new ArrayList<>();
-        List<Cart> userCart = cartService.getCart(userId);
-        List<String> productIds = userCart.stream().map(Cart::getProductId).toList();
+        try {
+            List<Cart> userCart = cartService.getCart(userId);
+            if (userCart.isEmpty()) {
+                return SaResult.ok("购物车无商品");
+            }
+            List<String> productIds = userCart.stream().map(Cart::getProductId).toList();
 
-        //<商品ID, 商品>
-        Map<String, Products> productsMap = productsService.getProductsIdMap(productIds);
-        for (Cart cart : userCart) {
-            Products products = productsMap.getOrDefault(cart.getProductId(), new Products());
-            GetCartResponse getCartResponse = new GetCartResponse();
-            BeanUtil.copyProperties(products, getCartResponse);
-            getCartResponse.setQuantity(cart.getQuantity());
-            responses.add(getCartResponse);
+            //<商品ID, 商品>
+            Map<String, Products> productsMap = productsService.getProductsIdMap(productIds);
+            for (Cart cart : userCart) {
+                Products products = productsMap.getOrDefault(cart.getProductId(), new Products());
+                GetCartResponse getCartResponse = new GetCartResponse();
+                BeanUtil.copyProperties(products, getCartResponse);
+                getCartResponse.setQuantity(cart.getQuantity());
+                responses.add(getCartResponse);
+            }
+
+            return SaResult.ok("success").setData(responses);
+        } catch (Exception e) {
+            log.error("获取购物车错误: {}", e.toString());
+            return SaResult.error("获取购物车错误: " + e.toString());
         }
+    }
 
-        return SaResult.ok("success").setData(responses);
+    /**
+     * 获取订单
+     *
+     * @param page 页码
+     * @param size 大小
+     * @return 订单信息
+     */
+    @Override
+    public SaResult getOrder(int page, int size) {
+        String userId = StpUtil.getLoginIdAsString();
+        try {
+            List<String> orderIds = userOrderService.getOrderId(userId);
+
+            Page<Orders> orderPage = new Page<>(page, size);
+            IPage<Orders> mainPage = ordersService.getOrders(orderPage, orderIds);
+
+            return SaResult.ok("success")
+                    .setData(mainPage.getRecords())
+                    .set("currentPage", mainPage.getCurrent())
+                    .set("totalPages", mainPage.getPages())
+                    .set("totalRecords", mainPage.getTotal());
+        } catch (Exception e) {
+            log.error("获取订单错误: {}", e.toString());
+            return SaResult.error("获取订单错误");
+        }
     }
 
     /**
@@ -509,6 +611,9 @@ public class UserServiceImpl implements UserService {
         try {
             List<String> orderIds = userOrderService.getOrderId(userId);
             List<Orders> orders = ordersService.getOrdersWithState(orderIds, State.UNPAID);
+            if (orders.isEmpty()) {
+                return SaResult.ok("无未支付订单");
+            }
             double price = 0.0;
             for (Orders order : orders) {
                 price += order.getPrice();
@@ -531,6 +636,9 @@ public class UserServiceImpl implements UserService {
         String userId = StpUtil.getLoginIdAsString();
         BaseContext.setCurrentId(userId);
         Orders orders = ordersService.getById(orderId);
+        if (!State.UNPAID.equals(orders.getState())) {
+            return SaResult.error("订单已支付");
+        }
         //获取支付状态(Api 待实现 当前默认支付成功)
 
         orders.setState(State.PAID);

@@ -20,6 +20,8 @@ public interface IOrdersService extends IService<Orders> {
 
     List<Orders> getOrders(List<String> orderIds);
 
+    IPage<Orders> getOrders(IPage<Orders> page, List<String> ids);
+
     IPage<Orders> getOrderPageByState(IPage<Orders> page, State state);
 
     List<Orders> getOrderByState(State state);

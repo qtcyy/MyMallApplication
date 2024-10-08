@@ -38,7 +38,13 @@ public interface UserService {
 
     SaResult addToCart(AddCartRequest request);
 
+    SaResult deleteCart(String productId);
+
+    SaResult changeCart(String productId, int quantity);
+
     SaResult getCart();
+
+    SaResult getOrder(int page, int size);
 
     SaResult getUnpaidOrder();
 

@@ -52,8 +52,15 @@ public class UserController {
     }
 
     @SaCheckLogin
+    @GetMapping("/logout")
+    public SaResult logout() {
+        StpUtil.logout();
+        return SaResult.ok("登出成功");
+    }
+
+    @SaCheckLogin
     @PostMapping("/change/pwd")
-    public SaResult changePwd(ChangePwdRequest request) {
+    public SaResult changePwd(@RequestBody ChangePwdRequest request) {
         return userService.changePwd(request);
     }
 
@@ -134,9 +141,27 @@ public class UserController {
     }
 
     @SaCheckLogin
+    @GetMapping("/cart/delete")
+    public SaResult deletedCart(@RequestParam String productId) {
+        return userService.deleteCart(productId);
+    }
+
+    @SaCheckLogin
+    @PostMapping("/cart/change")
+    public SaResult changeCart(@RequestParam String productId, @RequestParam int quantity) {
+        return userService.changeCart(productId, quantity);
+    }
+
+    @SaCheckLogin
     @GetMapping("/cart")
     public SaResult getCart() {
         return userService.getCart();
+    }
+
+    @SaCheckLogin
+    @GetMapping("/order/get")
+    public SaResult getOrder(@RequestParam int page, @RequestParam int size) {
+        return userService.getOrder(page, size);
     }
 
     @SaCheckLogin
@@ -146,13 +171,13 @@ public class UserController {
     }
 
     @SaCheckLogin
-    @GetMapping("/order/pay/{orderId}")
-    public SaResult payOrder(@NotBlank(message = "订单ID不能为空") @PathVariable String orderId) {
+    @GetMapping("/order/pay")
+    public SaResult payOrder(@NotBlank(message = "订单ID不能为空") @RequestParam String orderId) {
         return userService.payOrder(orderId);
     }
 
     @SaCheckLogin
-    @PostMapping("/order/pay")
+    @PostMapping("/order/pay/list")
     public SaResult payOrders(@NotBlank(message = "订单ID不能为空") @RequestBody List<String> orderIds) {
         return userService.payOrders(orderIds);
     }
