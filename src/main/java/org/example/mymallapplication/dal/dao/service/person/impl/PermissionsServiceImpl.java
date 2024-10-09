@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.example.mymallapplication.dal.dao.entity.person.Permissions;
 import org.example.mymallapplication.dal.dao.mapper.person.PermissionsMapper;
 import org.example.mymallapplication.dal.dao.service.person.IPermissionsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,10 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PermissionsServiceImpl extends ServiceImpl<PermissionsMapper, Permissions> implements IPermissionsService {
+
+    @Autowired
+    private PermissionsMapper mapper;
+
     /**
      * <p>获取权限字符串列表</p>
      *
@@ -33,5 +38,16 @@ public class PermissionsServiceImpl extends ServiceImpl<PermissionsMapper, Permi
         return this.baseMapper.selectObjs(queryWrapper).stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * <p>获取用户权限字符串列表</p>
+     *
+     * @param userId 用户ID
+     * @return 权限字符串列表
+     */
+    @Override
+    public List<String> getPermissions(String userId) {
+        return mapper.getPermissionsByUserId(userId);
     }
 }

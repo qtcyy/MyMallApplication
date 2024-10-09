@@ -15,4 +15,6 @@ import java.util.List;
  */
 public interface IRolesService extends IService<Roles> {
     List<String> getRoles(List<String> roleIds);
+
+    List<String> getRoles(String userId);
 }

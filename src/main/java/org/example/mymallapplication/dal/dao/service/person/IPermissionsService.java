@@ -16,4 +16,6 @@ import java.util.List;
 public interface IPermissionsService extends IService<Permissions> {
 
     List<String> getPermissions(List<String> ids);
+
+    List<String> getPermissions(String userId);
 }

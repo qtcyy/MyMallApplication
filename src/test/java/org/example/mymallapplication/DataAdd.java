@@ -3,6 +3,8 @@ package org.example.mymallapplication;
 import cn.dev33.satoken.secure.SaSecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.example.mymallapplication.dal.dao.entity.person.*;
+import org.example.mymallapplication.dal.dao.mapper.person.PermissionsMapper;
+import org.example.mymallapplication.dal.dao.mapper.person.RolesMapper;
 import org.example.mymallapplication.dal.dao.service.person.*;
 import org.example.mymallapplication.dal.service.DBService;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootTest
 public class DataAdd {
@@ -32,6 +35,10 @@ public class DataAdd {
     IBalanceService balanceService;
     @Autowired
     DBService dbService;
+    @Autowired
+    PermissionsMapper permissionsMapper;
+    @Autowired
+    RolesMapper rolesMapper;
 
     @Test
     void roleInsert() {
@@ -149,5 +156,19 @@ public class DataAdd {
     @Test
     void passwdTest() {
         System.out.println(SaSecureUtil.sha256("123456"));
+    }
+
+    @Test
+    void md5Test() {
+        String password = "12345";
+        String salt = UUID.randomUUID().toString();
+        System.out.println(salt);
+        System.out.println(SaSecureUtil.md5(password + salt));
+    }
+
+    @Test
+    void joinTest() {
+        List<String> list = rolesMapper.getRolesByUserId("3953f1a8375093ac1472eeb0e77cbed5");
+        list.forEach(System.out::println);
     }
 }

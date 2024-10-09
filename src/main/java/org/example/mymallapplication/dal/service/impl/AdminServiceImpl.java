@@ -14,11 +14,12 @@ import org.example.mymallapplication.dal.dao.entity.person.FrontendUsers;
 import org.example.mymallapplication.dal.dao.entity.person.Users;
 import org.example.mymallapplication.dal.dao.entity.product.Advertisements;
 import org.example.mymallapplication.dal.dao.service.person.IFrontendUsersService;
+import org.example.mymallapplication.dal.dao.service.person.IPermissionsService;
+import org.example.mymallapplication.dal.dao.service.person.IRolesService;
 import org.example.mymallapplication.dal.dao.service.person.IUsersService;
 import org.example.mymallapplication.dal.dao.service.product.IAdvertisementsService;
 import org.example.mymallapplication.dal.redis.service.RedisService;
 import org.example.mymallapplication.dal.service.AdminService;
-import org.example.mymallapplication.dal.service.DBService;
 import org.example.mymallapplication.dal.vo.request.*;
 import org.example.mymallapplication.dal.vo.response.AdminLoginResponse;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +48,9 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
-    private DBService dbService;
+    private IRolesService rolesService;
+    @Autowired
+    private IPermissionsService permissionsService;
 
     /**
      * <p>管理员登陆服务</p>
@@ -135,7 +138,7 @@ public class AdminServiceImpl implements AdminService {
         if (!usersService.hasUser(userId)) {
             return Collections.emptyList();
         }
-        return dbService.getRoles(userId);
+        return rolesService.getRoles(userId);
     }
 
     /**
@@ -146,7 +149,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<String> getPermission() {
         String userId = StpUtil.getLoginIdAsString();
-        return dbService.getPermissions(userId);
+        return permissionsService.getPermissions(userId);
     }
 
     /**
